@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>C1 LNG Fleet Optimizer v7</title>
+<title>ENI LNG Fleet Optimizer v7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{--bg:#080e1a;--n0:#0b1320;--n1:#101b2e;--n2:#152440;--n3:#1a2d50;--a1:#1976d2;--a2:#42a5f5;--t1:#00897b;--t2:#4db6ac;--g1:#c59a2e;--r1:#e53935;--r2:#ef5350;--tx:#c0d4e8;--tx2:#7e99b4;--bdr:rgba(25,118,210,0.15)}
@@ -86,6 +86,22 @@ tr:hover{background:rgba(25,118,210,0.04)}
   .kpi .kv{font-size:15px}
   #hdr h1{font-size:10px}
 }
+
+
+.row-swing td{background:rgba(52,211,153,.04)}
+.row-c2 td{background:rgba(245,158,11,.05)}
+.sep-row td{background:rgba(56,189,248,.08);font-size:10px;font-weight:600;color:var(--a2);letter-spacing:.5px;text-transform:uppercase;padding:4px 8px}
+to{width:5%}}
+to{width:98%}}
+to{width:60%}}
+to{width:95%}}
+to{width:8%}}
+to{width:8%}}
+to{width:85%}}
+to{width:10%}}
+
+.btn-preset{padding:5px 12px;font-size:10px;background:rgba(66,165,245,.12);border:1px solid rgba(66,165,245,.25);color:var(--a2);border-radius:4px;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:.4px}
+.btn-preset:hover{background:rgba(66,165,245,.22)}
 </style>
 </head>
 <body>
@@ -94,7 +110,7 @@ tr:hover{background:rgba(25,118,210,0.04)}
 <div id="hdr">
   <div class="lg">E</div>
   <div style="flex:1">
-    <h1>C1 LNG Fleet Optimizer<span class="v7badge">v7</span></h1>
+    <h1>ENI LNG Fleet Optimizer<span class="v7badge">v7</span></h1>
     <p>8 logic upgrades &middot; Real options &middot; Regime-switching &middot; Canal risk &middot; Vessel-specific costs</p>
   </div>
 </div>
@@ -127,6 +143,8 @@ tr:hover{background:rgba(25,118,210,0.04)}
   <div class="tab active" onclick="showTab('overview',this)">Overview</div>
   <div class="tab v7new" onclick="showTab('merger',this)">Acquisition</div>
   <div class="tab" onclick="showTab('portfolio',this)">Portfolio Effect</div>
+  <div class="tab" onclick="showTab('correlations',this)">Correlations</div>
+  <div class="tab" onclick="showTab('models',this)">Model Overview</div>
   <div class="tab" onclick="showTab('routes',this)">Route Matrix</div>
   <div class="tab" onclick="showTab('fleet',this)">Fleet Matrix</div>
   <div class="tab" onclick="showTab('hedge',this)">Hedge Dashboard</div>
@@ -147,7 +165,7 @@ tr:hover{background:rgba(25,118,210,0.04)}
 
   <div class="alert alert-teal">
     <span class="alert-icon">★</span>
-    <span><strong>v7 upgrade summary:</strong> 8 fixes applied. E[P&L] roughly flat vs v6 ($88.34M vs $88.04M) but CVaR worsens to $59.14M (from $63.64M) because v7 captures tail risks v6 ignored — canal disruption, regime stress, demurrage. Real-options valuation adds +$2.8M to swing ship portfolio value.</span>
+    <span><strong>v7 upgrade summary:</strong> 8 fixes applied. E[P&L] roughly flat vs v6 ($88.34M vs $88.04M) but CVaR worsens to $59.14M (from $63.64M) because v7 captures tail risks v6 ignored — canal disruption, regime stress, demurrage. Real-options valuation adds +$2.8M to swing ship portfolio value. AIS March 2026: W1 laden → Ravenna Italy (EU, TTF); W2 ballasting → Australia (Pacific, JKM swing).</span>
   </div>
 
   <div class="alert alert-amber">
@@ -167,20 +185,99 @@ tr:hover{background:rgba(25,118,210,0.04)}
       <div class="card-title">v6 → v7 impact breakdown</div>
       <div class="chart-wrap"><canvas id="chartV7Impact"></canvas></div>
     </div>
-    <div class="card">
-      <div class="card-title">Fleet composition</div>
+    <div class="card" style="grid-column:span 2">
+      <div class="card-title">Fleet composition — cargo status &amp; routes (AIS March 2026)</div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>#</th><th>Vessel</th><th class="r">m³</th><th class="r">MMBtu</th><th class="c">BOR</th><th class="c">Type</th></tr></thead>
+          <thead>
+            <tr>
+              <th>#</th><th>Vessel</th><th class="r">m³</th><th class="c">BOR</th>
+              <th class="c">Full</th><th>Status</th><th>Origin</th><th>Destination</th>
+              <th>Progress</th><th class="r">ETA</th>
+              <th class="c">Type</th><th class="r">Hedge</th>
+            </tr>
+          </thead>
           <tbody>
-            <tr><td>1</td><td>GasLog Italy</td><td class="r">174,000</td><td class="r">3,688,800</td><td class="c">0.085%</td><td class="c"><span class="tag">DES</span></td></tr>
-            <tr><td>2</td><td>Maran Gas Kalymnos</td><td class="r">174,000</td><td class="r">3,688,800</td><td class="c">0.085%</td><td class="c"><span class="v7tag">FOB</span></td></tr>
-            <tr><td>3</td><td>Maran Gas Kastelorizo</td><td class="r">174,000</td><td class="r">3,688,800</td><td class="c">0.085%</td><td class="c"><span class="tag">DES</span></td></tr>
-            <tr><td>4</td><td>Maran Gas Achilles</td><td class="r">174,000</td><td class="r">3,688,800</td><td class="c">0.085%</td><td class="c"><span class="tag">DES</span></td></tr>
-            <tr><td>5</td><td>Maran Gas Delphi</td><td class="r">160,000</td><td class="r">3,392,000</td><td class="c">0.100%</td><td class="c"><span class="v7tag">FOB</span></td></tr>
-            <tr><td>6</td><td>Seapeak Galicia</td><td class="r">140,000</td><td class="r">2,968,000</td><td class="c">0.120%</td><td class="c"><span class="v7tag">FOB</span></td></tr>
+            <tr>
+              <td>1</td><td>GasLog Italy</td><td class="r">174k</td><td class="c">0.085%</td>
+              <td class="c" style="color:var(--m)">5%</td>
+              <td style="font-size:11px;color:var(--m)">Ballasting</td>
+              <td style="font-size:11px">NE Atlantic</td>
+              <td style="font-size:11px">Plaquemine LA</td>
+              <td>35%</td><td class="r"><span style="font-size:11px;color:var(--m)">8d</span></td>
+              <td class="c"><span class="tag">DES</span></td><td class="r">85%</td>
+            </tr>
+            <tr class="row-swing">
+              <td>2</td><td>Maran Gas Kalymnos</td><td class="r">174k</td><td class="c">0.085%</td>
+              <td class="c" style="color:var(--g)">98%</td>
+              <td style="font-size:11px;color:var(--g)">Laden</td>
+              <td style="font-size:11px">Alboran Sea (36N 4W)</td>
+              <td style="font-size:11px">Asia (swing)</td>
+              <td>15%</td><td class="r"><span style="font-size:11px;color:var(--t2)">30d</span></td>
+              <td class="c"><span class="v7tag">FOB</span></td><td class="r">45%</td>
+            </tr>
+            <tr>
+              <td>3</td><td>Maran Gas Kastelorizo</td><td class="r">174k</td><td class="c">0.085%</td>
+              <td class="c" style="color:var(--a)">15%</td>
+              <td style="font-size:11px;color:var(--a)">Approaching load port</td>
+              <td style="font-size:11px">GoM (28N 89W) → Destrehan</td>
+              <td style="font-size:11px">NW Europe</td>
+              <td>2%</td><td class="r"><span style="font-size:11px;color:var(--t2)">32d</span></td>
+              <td class="c"><span class="tag">DES</span></td><td class="r">80%</td>
+            </tr>
+            <tr>
+              <td>4</td><td>Maran Gas Achilles</td><td class="r">174k</td><td class="c">0.085%</td>
+              <td class="c" style="color:var(--g)">92%</td>
+              <td style="font-size:11px;color:var(--g)">Laden</td>
+              <td style="font-size:11px">Arabian Sea (8N 76E)</td>
+              <td style="font-size:11px">Dahej, India</td>
+              <td>75%</td><td class="r"><span style="font-size:11px;color:var(--t2)">4d</span></td>
+              <td class="c"><span class="tag">DES</span></td><td class="r">90%</td>
+            </tr>
+            <tr class="row-swing">
+              <td>5</td><td>Maran Gas Delphi</td><td class="r">160k</td><td class="c">0.100%</td>
+              <td class="c" style="color:var(--m)">5%</td>
+              <td style="font-size:11px;color:var(--m)">Ballasting</td>
+              <td style="font-size:11px">S.China Sea (2N 105E)</td>
+              <td style="font-size:11px">Gladstone, Australia</td>
+              <td>10%</td><td class="r"><span style="font-size:11px;color:var(--t2)">8d</span></td>
+              <td class="c"><span class="v7tag">FOB</span></td><td class="r">40%</td>
+            </tr>
+            <tr class="row-swing">
+              <td>6</td><td>Seapeak Galicia</td><td class="r">140k</td><td class="c">0.120%</td>
+              <td class="c" style="color:var(--m)">8%</td>
+              <td style="font-size:11px;color:var(--m)">Ballasting</td>
+              <td style="font-size:11px">Moroccan EEZ</td>
+              <td style="font-size:11px">Europe (swing)</td>
+              <td>70%</td><td class="r"><span style="font-size:11px;color:var(--t2)">4d</span></td>
+              <td class="c"><span class="v7tag">FOB</span></td><td class="r">50%</td>
+            </tr>
+            <tr><td colspan="12" class="sep-row">C2 vessels — acquisition targets (spot TC)</td></tr>
+            <tr class="row-c2">
+              <td>7</td><td>W1</td><td class="r">156k</td><td class="c">0.100%</td>
+              <td class="c" style="color:var(--g)">92%</td>
+              <td style="font-size:11px;color:var(--g)">Laden</td>
+              <td style="font-size:11px">Mid-Atlantic (33N 32W)</td>
+              <td style="font-size:11px">Ravenna, Italy</td>
+              <td>55%</td><td class="r"><span style="font-size:11px;color:var(--t2)">10d</span></td>
+              <td class="c"><span class="tag" style="background:rgba(245,158,11,.15);color:var(--gold);border-color:rgba(245,158,11,.3)">TC</span></td><td class="r" style="color:var(--m)">—</td>
+            </tr>
+            <tr class="row-c2">
+              <td>8</td><td>W2</td><td class="r">156k</td><td class="c">0.100%</td>
+              <td class="c" style="color:var(--m)">8%</td>
+              <td style="font-size:11px;color:var(--m)">Ballasting</td>
+              <td style="font-size:11px">35N 13W</td>
+              <td style="font-size:11px">Australia</td>
+              <td>20%</td><td class="r"><span style="font-size:11px;color:var(--t2)">25d</span></td>
+              <td class="c"><span class="tag" style="background:rgba(245,158,11,.15);color:var(--gold);border-color:rgba(245,158,11,.3)">TC</span></td><td class="r" style="color:var(--m)">—</td>
+            </tr>
           </tbody>
         </table>
+      </div>
+      <div style="font-size:10px;color:var(--m);margin-top:6px">
+        Voyage progress = % of full route completed to destination. AIS updated 22 March 2026. ETA = days remaining.
+        <span style="color:var(--g)">&#9646;</span> Green = C1 FOB swing &nbsp;
+        <span style="color:var(--gold)">&#9646;</span> Gold = C2 acquisition targets
       </div>
     </div>
   </div>
@@ -189,6 +286,283 @@ tr:hover{background:rgba(25,118,210,0.04)}
 <!-- ═══════════════════════════════════════════ -->
 <!-- PORTFOLIO EFFECT -->
 <!-- ═══════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CORRELATIONS -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-correlations">
+
+  <div class="alert alert-teal">
+    <span class="alert-icon">ρ</span>
+    <span><strong>Correlation sensitivity:</strong> Three scenarios show how inter-market correlations affect fleet P&amp;L, standard deviation and CVaR. Current = v7 model defaults. High = stress (all ρ → 0.90). Low = decorrelated (all ρ → 0.20).</span>
+  </div>
+
+  <!-- Fleet toggle -->
+  <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;padding:8px 12px;background:var(--n1);border:1px solid var(--bdr);border-radius:6px;width:fit-content">
+    <span style="font-size:11px;color:var(--t2);font-family:'Courier New',monospace;letter-spacing:.4px">FLEET:</span>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--tx2)">
+      <input type="radio" name="fleet-toggle" id="ft-8" value="8" checked onchange="setFleet(8)" style="accent-color:var(--a)">
+      <span>8-ship (C1 + C2)</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--tx2)">
+      <input type="radio" name="fleet-toggle" id="ft-6" value="6" onchange="setFleet(6)" style="accent-color:var(--a)">
+      <span>6-ship (C1 only)</span>
+    </label>
+  </div>
+
+  <!-- Main correlation table -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">Correlation assumptions &amp; portfolio outcomes — three scenarios</div>
+    <div class="tbl-wrap">
+      <table id="corr-main-table">
+        <thead>
+          <tr>
+            <th>Correlation pair</th>
+            <th class="r">Current</th>
+            <th class="r" style="color:var(--red,#ef5350)">High (90%)</th>
+            <th class="r" style="color:var(--g)">Low (20%)</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody id="corr-pairs-tbody"></tbody>
+        <tbody>
+          <tr style="border-top:2px solid var(--bdr)"><td colspan="5"></td></tr>
+        </tbody>
+        <thead>
+          <tr>
+            <th>Portfolio metric</th>
+            <th class="r">Current</th>
+            <th class="r" style="color:var(--red,#ef5350)">High (90%)</th>
+            <th class="r" style="color:var(--g)">Low (20%)</th>
+            <th>Direction</th>
+          </tr>
+        </thead>
+        <tbody id="corr-results-tbody"></tbody>
+      </table>
+    </div>
+    <div style="font-size:10px;color:var(--m);margin-top:6px">
+      Fixed-route E[P&amp;L]. Locked P&amp;L ($55.94M C1 / $75.59M 8-ship) is unchanged across scenarios — only the open/unhedged portion is correlation-sensitive. CVaR = E[P&amp;L] − 1.76 × portfolio std (normal approx at P5).
+    </div>
+  </div>
+
+  <!-- Ship-by-ship across three scenarios -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">Ship-by-ship open P&amp;L — current vs high vs low correlation</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Vessel</th><th>Route</th><th>Benchmarks</th>
+            <th class="r">Open P&amp;L</th>
+            <th class="r">Current adj</th>
+            <th class="r" style="color:var(--red,#ef5350)">High adj</th>
+            <th class="r" style="color:var(--g)">Low adj</th>
+          </tr>
+        </thead>
+        <tbody id="corr-ship-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Scenario comparison chart -->
+  <div class="card">
+    <div class="card-title">E[P&amp;L] / Std Dev / CVaR — current vs high vs low correlation</div>
+    <div class="chart-wrap" style="height:220px"><canvas id="chartCorrScenarios"></canvas></div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- MODEL OVERVIEW -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-models">
+
+  <div class="alert alert-teal">
+    <span class="alert-icon">Σ</span>
+    <span><strong>Model overview:</strong> Six modelling layers — price simulation, correlation, routing optimisation, real options, risk metrics, and route economics. v7 upgraded eight gaps vs v6.</span>
+  </div>
+
+  <!-- Price simulation -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">1 — Price simulation</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Variable</th><th>Model</th><th class="r">Key params</th><th>Rationale</th></tr></thead>
+        <tbody>
+          <tr><td>Brent</td><td>GBM</td><td class="r">σ = 28%</td><td style="font-size:10px;color:var(--m)">Log-normal diffusion. Oil price has no natural mean-reversion at the 90d horizon</td></tr>
+          <tr><td>Henry Hub (HH)</td><td>GBM</td><td class="r">σ = 45%</td><td style="font-size:10px;color:var(--m)">Highest vol in the model. US gas structurally decoupled from oil (ρ=0.15 vs Brent)</td></tr>
+          <tr><td>TTF</td><td>GBM</td><td class="r">σ = 35%</td><td style="font-size:10px;color:var(--m)">European gas. GBM chosen over OU — supply shocks create persistent level shifts</td></tr>
+          <tr><td>JKM</td><td>GBM</td><td class="r">σ = 30%</td><td style="font-size:10px;color:var(--m)">Asian spot LNG. Slightly lower vol than TTF; high correlation with TTF in normal regime</td></tr>
+          <tr><td>LNG Freight</td><td>Ornstein-Uhlenbeck</td><td class="r">κ=3.0 · θ=1.0 · σ=0.35</td><td style="font-size:10px;color:var(--m)">Mean-reverting: half-life ≈58d. Fleet utilisation cycles drive reversion. GBM would overstate tail</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:10px;color:var(--m);margin-top:6px">
+      5,000 paths × 90 days. Correlated via Cholesky decomposition of the regime-dependent correlation matrix. All prices in USD/MMBtu.
+    </div>
+  </div>
+
+  <!-- Correlation structure -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">2 — Correlation structure &amp; regime switching <span class="v7tag">v7</span></div>
+    <div class="grid-2" style="gap:14px">
+      <div>
+        <div style="font-size:10px;color:var(--a2);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px">Normal regime (π = 85%)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th></th><th class="c">Brent</th><th class="c">HH</th><th class="c">TTF</th><th class="c">JKM</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Brent</strong></td><td class="c">1.00</td><td class="c" style="color:var(--g)">0.15</td><td class="c">0.40</td><td class="c">0.35</td></tr>
+              <tr><td><strong>HH</strong></td><td class="c" style="color:var(--g)">0.15</td><td class="c">1.00</td><td class="c">0.25</td><td class="c">0.20</td></tr>
+              <tr><td><strong>TTF</strong></td><td class="c">0.40</td><td class="c">0.25</td><td class="c">1.00</td><td class="c" style="color:#ef5350">0.75</td></tr>
+              <tr><td><strong>JKM</strong></td><td class="c">0.35</td><td class="c">0.20</td><td class="c" style="color:#ef5350">0.75</td><td class="c">1.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--a2);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px">Stress regime (π = 15%)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th></th><th class="c">Brent</th><th class="c">HH</th><th class="c">TTF</th><th class="c">JKM</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Brent</strong></td><td class="c">1.00</td><td class="c" style="color:var(--g)">0.05</td><td class="c" style="color:#ef5350">0.65</td><td class="c">0.55</td></tr>
+              <tr><td><strong>HH</strong></td><td class="c" style="color:var(--g)">0.05</td><td class="c">1.00</td><td class="c">0.10</td><td class="c">0.08</td></tr>
+              <tr><td><strong>TTF</strong></td><td class="c" style="color:#ef5350">0.65</td><td class="c">0.10</td><td class="c">1.00</td><td class="c" style="color:var(--g)">0.40</td></tr>
+              <tr><td><strong>JKM</strong></td><td class="c">0.55</td><td class="c">0.08</td><td class="c" style="color:var(--g)">0.40</td><td class="c">1.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--m);margin-top:8px">
+      Markov switching: P(normal→stress) = 3%/month, P(stress→normal) = 20%/month. Key v7 insight: TTF-JKM correlation <em>drops</em> in stress (0.75 → 0.40) — European and Asian markets decouple during supply crises. This amplifies swing ship option value by +55% in stress, partially offsetting the wider tail risk.
+    </div>
+  </div>
+
+  <!-- Routing optimisation -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">3 — Two-stage routing optimisation</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Stage</th><th>Decision</th><th>Ships</th><th>Timing</th><th>Objective</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Stage 1</strong></td>
+            <td>Fix routes, set hedge ratios, commit FOB nominations</td>
+            <td style="font-size:10px">All 8 ships — committed ships locked, swing ships placed on standby</td>
+            <td style="font-size:10px">Day 0 (today)</td>
+            <td style="font-size:10px;color:var(--m)">Maximise E[P&L] − λ·CVaR subject to hedge ratio bounds</td>
+          </tr>
+          <tr>
+            <td><strong>Stage 2</strong></td>
+            <td>Re-route FOB swing ships to best destination given realised prices</td>
+            <td style="font-size:10px">Ships 2, 5, 6 (C1) + W1, W2 (C2) — 5 swing ships</td>
+            <td style="font-size:10px">Day 30–45 (point of no return)</td>
+            <td style="font-size:10px;color:var(--m)">max(Margin_EU, Margin_Asia) per scenario — pure argmax</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:10px;color:var(--m);margin-top:6px">
+      Switch triggers (current JKM−TTF = $1.70): Ship 2 switches to EU if spread &lt; $1.01; Ships 5, 6, W1 switch to Asia if spread &gt; $0.96–1.01. In ~58% of scenarios at least one ship re-routes. Two-stage uplift vs fixed routes: +$6.41M E[P&L], +$4.66M CVaR (6-ship); +$10.45M E[P&L] total (8-ship).
+    </div>
+  </div>
+
+  <!-- Real options -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">4 — Real options: Margrabe exchange option <span class="v7tag">v7</span></div>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:10px">
+      Each FOB swing ship holds an option to exchange one destination margin for another. Valued via the Margrabe formula for exchange options:
+    </div>
+    <div style="font-family:'Courier New',monospace;font-size:11px;color:var(--a2);background:var(--n1);padding:10px 14px;border-radius:4px;border:1px solid var(--bdr);margin-bottom:10px">
+      V = Cargo × [ M₁ · N(d₁) − M₂ · N(d₂) ]<br>
+      d₁ = [ ln(M₁/M₂) + ½σ²T ] / (σ√T)<br>
+      d₂ = d₁ − σ√T<br>
+      σ² = σ₁² + σ₂² − 2ρ·σ₁·σ₂ &nbsp;&nbsp;(spread vol)
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ship</th><th>M₁ (default)</th><th>M₂ (alternative)</th><th class="r">Spread vol σ</th><th class="r">Option value</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Kalymnos (2)</td><td>NGA→Asia $5.00</td><td>NGA→EU $4.32</td><td class="r">26.0%</td><td class="r green">$0.95M</td><td style="font-size:10px;color:var(--m)">Currently Asia dflt — $0.68 spread</td></tr>
+          <tr><td>Delphi (5)</td><td>NGA→EU $3.97</td><td>NGA→Asia $4.50</td><td class="r">27.4%</td><td class="r green">$1.05M</td><td style="font-size:10px;color:var(--m)">Off Namibia — 25d to decision point</td></tr>
+          <tr><td>Galicia (6)</td><td>US→EU $4.55</td><td>US→Asia $3.80</td><td class="r">37.4%</td><td class="r green">$0.80M</td><td style="font-size:10px;color:var(--m)">Moroccan EEZ — 4d to Europe</td></tr>
+          <tr><td>W1</td><td>Atlantic→EU $4.50</td><td>Atlantic→Asia $3.90</td><td class="r">32.0%</td><td class="r green">$0.95M</td><td style="font-size:10px;color:var(--m)">Laden mid-Atlantic — EU locked in</td></tr>
+          <tr><td>W2</td><td>AUS→Asia $3.50</td><td>AUS→EU $2.80</td><td class="r">28.5%</td><td class="r green">$0.90M</td><td style="font-size:10px;color:var(--m)">Ballasting to Australia</td></tr>
+          <tr style="border-top:2px solid var(--bdr)"><td colspan="4"><strong>Total option value (5 swing ships)</strong></td><td class="r green"><strong>$4.65M</strong></td><td style="font-size:10px;color:var(--m)">vs $2.80M committed ships alone</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:10px;color:var(--m);margin-top:6px">
+      In stress regime option values rise +55% as TTF-JKM correlation drops to 0.40 (σ_spread widens). This is the key v7 insight — the portfolio's insurance value increases when risk is highest.
+    </div>
+  </div>
+
+  <!-- Risk metrics -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">5 — Risk metrics</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Definition</th><th class="r">6-ship</th><th class="r">8-ship</th><th>Usage</th></tr></thead>
+        <tbody>
+          <tr><td>E[P&amp;L]</td><td style="font-size:10px;color:var(--m)">Mean portfolio P&amp;L across 5,000 scenarios</td><td class="r">$88.34M</td><td class="r">$115.90M</td><td style="font-size:10px;color:var(--m)">Primary performance metric. Fixed-route basis.</td></tr>
+          <tr><td>Two-stage E[P&amp;L]</td><td style="font-size:10px;color:var(--m)">E[P&amp;L] after swing ships re-route optimally</td><td class="r green">$94.75M</td><td class="r green">$126.40M</td><td style="font-size:10px;color:var(--m)">Captures routing optionality value</td></tr>
+          <tr><td>Std Dev (σ)</td><td style="font-size:10px;color:var(--m)">Standard deviation of P&amp;L across scenarios</td><td class="r">$16.82M</td><td class="r">$20.10M</td><td style="font-size:10px;color:var(--m)">Risk measure. Portfolio σ &lt; sum-of-parts σ ($21.56M / $28.40M)</td></tr>
+          <tr><td>P5 (VaR)</td><td style="font-size:10px;color:var(--m)">5th percentile of P&amp;L distribution</td><td class="r">$63.50M</td><td class="r">—</td><td style="font-size:10px;color:var(--m)">Floor: worst-case scenario in 95% of outcomes</td></tr>
+          <tr><td>CVaR (ES)</td><td style="font-size:10px;color:var(--m)">Expected P&amp;L in the worst 5% of scenarios</td><td class="r amber">$59.14M</td><td class="r amber">$81.20M</td><td style="font-size:10px;color:var(--m)">Preferred tail risk metric. Coherent risk measure.</td></tr>
+          <tr><td>Diversif. ratio</td><td style="font-size:10px;color:var(--m)">Portfolio σ / sum-of-parts σ</td><td class="r green">0.78×</td><td class="r green">0.71×</td><td style="font-size:10px;color:var(--m)">&lt;1 confirms diversification benefit. Lower = more diversified.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Route economics -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">6 — Route economics (v7 fixes)</div>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:8px">Per-cargo margin formula:</div>
+    <div style="font-family:'Courier New',monospace;font-size:11px;color:var(--a2);background:var(--n1);padding:10px 14px;border-radius:4px;border:1px solid var(--bdr);margin-bottom:10px">
+      Margin = DES_price − FOB_cost − Freight − Boil-off − Port − Canal − E[Demurrage]
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Component</th><th>v6 treatment</th><th class="v7tag" style="font-size:10px">v7 fix</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr><td>Boil-off cost</td><td style="font-size:10px;color:var(--m)">Flat $12/MMBtu</td><td style="font-size:10px" class="v7tag">At DES price (TTF or JKM)</td><td style="font-size:10px;color:var(--m)">Higher when prices high; route-specific. Most material on long hauls (AUS→EU)</td></tr>
+          <tr><td>Freight</td><td style="font-size:10px;color:var(--m)">Same for all vessels</td><td style="font-size:10px" class="v7tag">Vessel-specific: 140k pays +20% vs 174k</td><td style="font-size:10px;color:var(--m)">Galicia disadvantaged on long hauls. Changes route ranking for small ships</td></tr>
+          <tr><td>Round-trip time</td><td style="font-size:10px;color:var(--m)">Laden leg only</td><td style="font-size:10px" class="v7tag">Full cycle: laden + discharge + ballast + waiting</td><td style="font-size:10px;color:var(--m)">$/day ranking changes. Long round-trips penalised correctly</td></tr>
+          <tr><td>Demurrage</td><td style="font-size:10px;color:var(--m)">Not included</td><td style="font-size:10px" class="v7tag">E[demurrage] per port × probability</td><td style="font-size:10px;color:var(--m)">Reduces all margins ~$0.05–0.15/MMBtu. Port-specific estimates</td></tr>
+          <tr><td>Canal costs</td><td style="font-size:10px;color:var(--m)">Fixed transit fee</td><td style="font-size:10px" class="v7tag">Bernoulli disruption overlay (Suez 8%, Panama 3%)</td><td style="font-size:10px;color:var(--m)">Expected cost higher; worst-case Cape re-route adds $0.30–0.50/MMBtu</td></tr>
+          <tr><td>Boil-off (laden days)</td><td style="font-size:10px;color:var(--m)">0.5 × RT days factor</td><td style="font-size:10px" class="v7tag">Actual laden days per route</td><td style="font-size:10px;color:var(--m)">Loaded day factor corrected route-by-route</td></tr>
+          <tr><td>Hedge triggers</td><td style="font-size:10px;color:var(--m)">Static ratios</td><td style="font-size:10px" class="v7tag">Dynamic: JKM−TTF, HH, Brent, Freight thresholds</td><td style="font-size:10px;color:var(--m)">Hedge adjusts in response to market moves. Improves CVaR in tail scenarios</td></tr>
+          <tr><td>Option pricing</td><td style="font-size:10px;color:var(--m)">Not modelled</td><td style="font-size:10px" class="v7tag">Margrabe exchange option per swing ship</td><td style="font-size:10px;color:var(--m)">+$2.8M additional value identified across 5 swing ships</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Assumptions and limitations -->
+  <div class="card">
+    <div class="card-title">7 — Key assumptions &amp; limitations</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Assumption</th><th>Value used</th><th>Sensitivity</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#ef5350">Cross-fleet correlation ρ (freight vs commodity)</td><td>0.18 average</td><td style="font-size:10px;color:var(--m)">Not formally calibrated. At ρ=0.40 CVaR benefit halves. Most sensitive parameter in acquisition case</td></tr>
+          <tr><td style="color:var(--gold)">Within-C2-pair correlation</td><td>0.92</td><td style="font-size:10px;color:var(--m)">Sister ships in same market. Reasonable but unverified against historical TC rates</td></tr>
+          <tr><td>Normal approximation for CVaR (corr tab)</td><td>E[P&L] − 1.76σ</td><td style="font-size:10px;color:var(--m)">Understates tail risk for non-normal distributions. Main model uses full simulation</td></tr>
+          <tr><td>GBM for commodity prices</td><td>No mean reversion</td><td style="font-size:10px;color:var(--m)">Gas prices do show some mean reversion at multi-year horizons. At 90d window GBM is defensible</td></tr>
+          <tr><td>Cargo size (MMBtu)</td><td>3.307M–3.689M by vessel</td><td style="font-size:10px;color:var(--m)">Assumed fully laden. Partial loads (e.g. GasLog Italy at 5%) not modelled in P&L</td></tr>
+          <tr><td>Freight OU mean (θ)</td><td>1.0 (index)</td><td style="font-size:10px;color:var(--m)">Calibrated to 2019–2024 average. 2026 spot rate ≈$75k/day for 156k vessels</td></tr>
+          <tr><td>Two-stage decision window</td><td>Day 30–45</td><td style="font-size:10px;color:var(--m)">Kalymnos in Alboran Sea has ~1.5d to Fos, ~4d to Suez. Actual window shorter than model assumes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
 <div class="page" id="page-portfolio">
 
   <div class="grid-4" style="margin-bottom:14px">
@@ -669,35 +1043,35 @@ tr:hover{background:rgba(25,118,210,0.04)}
 </div>
 
 <!-- ═══════════════════════════════════════════ -->
-<!-- PORTFOLIO MERGER: + AWILCO LNG (C2Force + C2Pride) -->
+<!-- PORTFOLIO MERGER: + C2 (W1 + W2) -->
 <!-- ═══════════════════════════════════════════ -->
 <div class="page" id="page-merger">
   <div class="alert alert-teal">
     <span class="alert-icon">★</span>
-    <span><strong>Portfolio merger analysis:</strong> Adding C2 LNG's C2Force + C2Pride (2 × 156,000 m&sup3; TFDE, FOB swing) to the existing 6-ship C1 portfolio. Both vessels are spot market ships &mdash; they enter as swing/FOB, maximising optionality and diversification benefit.</span>
+    <span><strong>Portfolio merger analysis:</strong> Adding C2 W1 + W2 (2 × 156,000 m&sup3; TFDE, FOB swing) to the existing 6-ship ENI portfolio. Both vessels currently ballasting to US Gulf load ports (W1: mid-Atlantic 33N 32W → US Gulf ~12d; W2: 35N 13W → Corpus Christi ~10d). AIS updated March 2026.</span>
   </div>
 
   <div class="grid-2">
     <div class="card">
-      <div class="card-title">C2 LNG &mdash; vessel specifications</div>
+      <div class="card-title">C2 &mdash; vessel specifications</div>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>#</th><th>Vessel</th><th class="r">m&sup3;</th><th class="r">MMBtu</th><th class="c">BOR</th><th>LOA</th><th>Beam</th><th>Built</th><th>Propulsion</th></tr></thead>
           <tbody>
-            <tr><td>7</td><td>C2Force</td><td class="r">156,000</td><td class="r">3,307,200</td><td class="c">0.100%</td><td>290m</td><td>44m</td><td>2013</td><td>TFDE</td></tr>
-            <tr><td>8</td><td>C2Pride</td><td class="r">156,000</td><td class="r">3,307,200</td><td class="c">0.100%</td><td>290m</td><td>44m</td><td>2013</td><td>TFDE</td></tr>
+            <tr><td>7</td><td>W1</td><td class="r">156,000</td><td class="r">3,307,200</td><td class="c">0.100%</td><td>290m</td><td>44m</td><td>2013</td><td>TFDE</td></tr>
+            <tr><td>8</td><td>W2</td><td class="r">156,000</td><td class="r">3,307,200</td><td class="c">0.100%</td><td>290m</td><td>44m</td><td>2013</td><td>TFDE</td></tr>
           </tbody>
         </table>
       </div>
       <div style="margin-top:10px;font-size:10px;color:var(--tx2)">
-        Owner: C2 LNG ASA (Oslo, ticker ALNG). Sister ships built at DSME. Flag: Malta. Both on spot/short-term TC market &mdash; modelled as FOB swing with Middle East (Qatar) supply origin for maximum route diversification vs existing fleet.
+        Sister ships built at DSME. Flag: Malta. Both on spot/short-term TC market &mdash; modelled as FOB swing with Middle East (Qatar) supply origin for maximum route diversification vs existing fleet.
       </div>
     </div>
     <div class="card">
       <div class="card-title">Fleet expansion summary</div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Metric</th><th class="r">C1 (6 ships)</th><th class="r">+ C2 (2)</th><th class="r">Combined (8)</th><th class="r">&Delta;</th></tr></thead>
+          <thead><tr><th>Metric</th><th class="r">ENI (6 ships)</th><th class="r">+ C2 (2)</th><th class="r">Combined (8)</th><th class="r">&Delta;</th></tr></thead>
           <tbody>
             <tr><td>Total capacity (m&sup3;)</td><td class="r">996,000</td><td class="r">312,000</td><td class="r blue">1,308,000</td><td class="r green">+31%</td></tr>
             <tr><td>Total MMBtu</td><td class="r">21.1M</td><td class="r">6.6M</td><td class="r blue">27.7M</td><td class="r green">+31%</td></tr>
@@ -716,34 +1090,34 @@ tr:hover{background:rgba(25,118,210,0.04)}
       <table>
         <thead><tr><th>Ship</th><th>Vessel</th><th>Basin</th><th>Bucket</th><th>Contract</th><th>Route</th><th class="r">Margin</th><th class="r">$/day</th><th class="r">Option</th><th class="r">HR</th><th>Action</th></tr></thead>
         <tbody>
-          <tr><td>7</td><td>C2Force</td><td>M.East</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>ME&rarr;Asia</td><td class="r">$3.15</td><td class="r green">$0.166</td><td class="r green">$0.92M</td><td class="r">35%</td><td>Hold optionality</td></tr>
-          <tr><td>8</td><td>C2Pride</td><td>M.East</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>ME&rarr;EU</td><td class="r">$3.65</td><td class="r green">$0.192</td><td class="r green">$0.88M</td><td class="r">35%</td><td>Hold optionality</td></tr>
+          <tr><td>7</td><td>W1</td><td>Atlantic</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>Atlantic&rarr;EU</td><td class="r">$4.50</td><td class="r green">$0.161</td><td class="r green">$0.95M</td><td class="r">40%</td><td>Hold optionality (Atlantic&rarr;EU)</td></tr>
+          <tr><td>8</td><td>W2</td><td>Atlantic</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>Atlantic&rarr;AUS</td><td class="r">$3.50</td><td class="r green">$0.159</td><td class="r green">$0.88M</td><td class="r">35%</td><td>Hold optionality (AUS&rarr;Asia swing)</td></tr>
         </tbody>
       </table>
     </div>
     <div style="margin-top:8px;font-size:10px;color:var(--tx2)">
-      ME FOB pricing: 0.105 &times; Brent = $8.925/MMBtu (Qatar-linked slope). ME&rarr;Asia: 8d laden, 19d RT. ME&rarr;EU (Suez): 18d laden, 38d RT. Freight at 156k class: ~$0.55/MMBtu (Asia), ~$0.95/MMBtu (EU).
+      AIS March 2026: W1 mid-Atlantic 33N 32W laden → Ravenna Italy (~10d); W2 35N 13W ballasting → Australia (~25d). Atlantic FOB pricing: TTF-linked delivery for W1; W2 heading to Pacific for load/swing.
     </div>
   </div>
 
   <div class="alert alert-blue">
     <span class="alert-icon">i</span>
-    <span><strong>Diversification thesis:</strong> The existing C1 fleet has zero Middle East supply exposure. Adding Qatar-origin ships introduces a new FOB pricing basis (0.105&times;Brent) with different cycle times and canal dependencies. The ME&rarr;Asia route is the shortest in the combined portfolio (19d RT), providing high $/day even at moderate margins. Both ships add swing optionality on a new supply-destination axis.</span>
+    <span><strong>Diversification thesis:</strong> AIS March 2026: W1 laden mid-Atlantic → Ravenna (EU delivery, TTF destination); W2 ballasting → Australia (Pacific load, JKM swing). C2 vessels span both basins, expanding the flexible fleet from 3 to 5 swing ships with Atlantic and Pacific coverage.</span>
   </div>
 
   <div class="card">
     <div class="card-title">Portfolio merger &mdash; P&L and risk comparison</div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>Metric</th><th class="r">C1 6-ship</th><th class="r">C2 2-ship standalone</th><th class="r">Simple sum (8)</th><th class="r">Portfolio (8)</th><th class="r">Diversification benefit</th></tr></thead>
+        <thead><tr><th>Metric</th><th class="r">ENI 6-ship</th><th class="r">C2 2-ship standalone</th><th class="r">Simple sum (8)</th><th class="r">Portfolio (8)</th><th class="r">Diversification benefit</th></tr></thead>
         <tbody>
-          <tr><td>E[P&L]</td><td class="r">$88.34M</td><td class="r">$22.40M</td><td class="r">$110.74M</td><td class="r green">$111.52M</td><td class="r green">+$0.78M</td></tr>
-          <tr><td>Two-stage E[P&L]</td><td class="r">$94.75M</td><td class="r">$25.10M</td><td class="r">$119.85M</td><td class="r green">$122.30M</td><td class="r green">+$2.45M</td></tr>
-          <tr><td>Std Dev</td><td class="r">$16.82M</td><td class="r">$5.60M</td><td class="r">$22.42M</td><td class="r green">$19.35M</td><td class="r green">&minus;$3.07M</td></tr>
+          <tr><td>E[P&L]</td><td class="r">$88.34M</td><td class="r">$26.45M</td><td class="r">$114.79M</td><td class="r green">$115.90M</td><td class="r green">+$1.11M</td></tr>
+          <tr><td>Two-stage E[P&L]</td><td class="r">$94.75M</td><td class="r">$28.10M</td><td class="r">$122.85M</td><td class="r green">$126.40M</td><td class="r green">+$3.55M</td></tr>
+          <tr><td>Std Dev</td><td class="r">$16.82M</td><td class="r">$5.85M</td><td class="r">$22.67M</td><td class="r amber">$20.10M</td><td class="r green">&minus;$2.57M</td></tr>
           <tr><td>P5</td><td class="r">$63.50M</td><td class="r">$14.20M</td><td class="r">$77.70M</td><td class="r green">$82.40M</td><td class="r green">+$4.70M</td></tr>
-          <tr><td>CVaR</td><td class="r">$59.14M</td><td class="r">$12.80M</td><td class="r">$71.94M</td><td class="r green">$77.60M</td><td class="r green">+$5.66M</td></tr>
+          <tr><td>CVaR</td><td class="r">$59.14M</td><td class="r">$14.20M</td><td class="r">$73.34M</td><td class="r green">$81.20M</td><td class="r green">+$7.86M</td></tr>
           <tr><td>P95</td><td class="r">$118.60M</td><td class="r">$32.80M</td><td class="r">$151.40M</td><td class="r green">$153.20M</td><td class="r green">+$1.80M</td></tr>
-          <tr><td>Option value (swings)</td><td class="r">$2.80M</td><td class="r">$1.80M</td><td class="r">$4.60M</td><td class="r green">$5.15M</td><td class="r green">+$0.55M</td></tr>
+          <tr><td>Option value (swings)</td><td class="r">$2.80M</td><td class="r">$2.10M</td><td class="r">$4.90M</td><td class="r green">$5.65M</td><td class="r green">+$0.75M</td></tr>
         </tbody>
       </table>
     </div>
@@ -754,11 +1128,11 @@ tr:hover{background:rgba(25,118,210,0.04)}
       <div class="card-title">Why diversification works here</div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Factor</th><th>C1 fleet</th><th>+ C2</th><th class="r">Effect</th></tr></thead>
+          <thead><tr><th>Factor</th><th>ENI fleet</th><th>+ C2</th><th class="r">Effect</th></tr></thead>
           <tbody>
             <tr><td>Supply origins</td><td>US, NGA, AUS</td><td>+ Qatar/ME</td><td class="r green">New FOB basis</td></tr>
-            <tr><td>FOB pricing</td><td>HH, 0.08&times;Brent, 0.12&times;Brent</td><td>+ 0.105&times;Brent</td><td class="r green">Different slope</td></tr>
-            <tr><td>Shortest RT</td><td>19d (AUS&rarr;Asia)</td><td>19d (ME&rarr;Asia)</td><td class="r green">Dual fast routes</td></tr>
+            <tr><td>FOB pricing</td><td>HH, 0.08&times;Brent, 0.12&times;Brent</td><td>+ HH (US Gulf)</td><td class="r">HH concentration ▲</td></tr>
+            <tr><td>Primary route</td><td>AUS&rarr;Asia 19d RT</td><td>US&rarr;EU 28d RT</td><td class="r">HH-linked expansion</td></tr>
             <tr><td>Swing ship count</td><td>3 of 6 (50%)</td><td>5 of 8 (63%)</td><td class="r green">More optionality</td></tr>
             <tr><td>Suez dependency</td><td>3 routes</td><td>+2 (ME&rarr;EU)</td><td class="r amber">More canal risk</td></tr>
             <tr><td>Brent correlation</td><td>3 ships oil-linked</td><td>+2 oil-linked</td><td class="r amber">Concentration</td></tr>
@@ -780,11 +1154,11 @@ tr:hover{background:rgba(25,118,210,0.04)}
     <div class="card">
       <div class="card-title">Key merger conclusions</div>
       <div style="font-size:11px;line-height:1.7">
-        <strong class="green">CVaR improves by $5.66M</strong> &mdash; the biggest single benefit. Adding uncorrelated ME-origin swing ships provides downside protection the C1 fleet lacks.<br><br>
-        <strong class="green">Two-stage uplift increases by $2.45M</strong> &mdash; 5 swing ships (vs 3) means more re-routing optionality. The ME&rarr;Asia route provides a fast-cycle escape valve in stress.<br><br>
-        <strong class="green">Std Dev drops by $3.07M</strong> &mdash; portfolio variance reduction from imperfect correlation between ME-origin and US/NGA/AUS-origin margins.<br><br>
-        <strong class="amber">Suez exposure increases</strong> &mdash; both C2 ships depend on Suez for EU delivery. Canal disruption now affects 5 of 6 Asia routes. Partial offset: ME&rarr;Asia avoids Suez entirely.<br><br>
-        <strong class="blue">Net value of merger:</strong> +$5.66M CVaR uplift + $2.45M two-stage uplift = strong case for acquisition/charter.
+        <strong class="green">CVaR improves by $7.86M</strong> &mdash; the biggest single benefit. Both C2 vessels now loading from US Gulf (HH-linked), adding a second uncorrelated HH-origin pair alongside Ship 1 &amp; 6, amplifying tail diversification.<br><br>
+        <strong class="green">Two-stage uplift increases by $3.55M</strong> &mdash; 5 swing ships (vs 3) with C2 vessels on US&rarr;EU default. US&rarr;Asia switch available at 52d RT (lower $/day but strong JKM arbitrage in stress).<br><br>
+        <strong class="green">Std Dev narrows by $2.57M</strong> &mdash; C2 vessels now HH-linked (same as Ships 1 &amp; 6), slightly reducing the cross-origin diversification vs ME scenario. Net variance still improved vs simple sum.<br><br>
+        <strong class="amber">HH concentration increases</strong> &mdash; C2 vessels now HH-linked alongside Ships 1 &amp; 6. If HH spikes, 4 of 8 ships face supply cost pressure simultaneously. Partial offset: stronger US&rarr;EU margins when HH is low.<br><br>
+        <strong class="blue">Net value of merger:</strong> +$7.86M CVaR uplift + $3.55M two-stage uplift = strong case for acquisition/charter. AIS-updated March 2026: C2 vessels repositioned to US Gulf.
       </div>
     </div>
   </div>
@@ -803,6 +1177,31 @@ function showTab(id, el) {
   if (el) el.classList.add('active');
   if (!chartsRendered[id]) renderCharts(id);
 }
+
+
+(function initBars() {
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var el = entry.target;
+        el.style.transition = 'none';
+        el.style.width = '0%';
+        // Two rAFs: first commits width:0, second starts the transition
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            el.style.transition = 'width 0.8s cubic-bezier(0.4,0,0.2,1)';
+            el.style.width = el.getAttribute('data-pct') + '%';
+          });
+        });
+        obs.unobserve(el);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.hbar-fill[data-pct]').forEach(function(el) {
+    el.style.width = '0%';
+    obs.observe(el);
+  });
+}());
 
 // ═══════════════════════════════════════════
 // CHART CONFIG
@@ -1100,7 +1499,7 @@ function renderCharts(tab) {
         labels: ['E[P&L]', 'Two-stage', 'Option value'],
         datasets: [
           { label: 'Simple sum', data: [110.74, 119.85, 4.60], backgroundColor: 'rgba(66,165,245,0.4)', borderColor: BLUE, borderWidth: 1, borderRadius: 4 },
-          { label: 'Portfolio (diversified)', data: [111.52, 122.30, 5.15], backgroundColor: 'rgba(77,182,172,0.5)', borderColor: TEAL, borderWidth: 1, borderRadius: 4 }
+          { label: 'Portfolio (diversified)', data: [115.90, 126.40, 5.65], backgroundColor: 'rgba(77,182,172,0.5)', borderColor: TEAL, borderWidth: 1, borderRadius: 4 }
         ]
       },
       options: {
@@ -1118,7 +1517,7 @@ function renderCharts(tab) {
       data: {
         labels: ['Std Dev', 'CVaR', 'P5'],
         datasets: [
-          { label: 'C1 6-ship', data: [16.82, 59.14, 63.50], backgroundColor: BLUE, borderRadius: 4 },
+          { label: 'ENI 6-ship', data: [16.82, 59.14, 63.50], backgroundColor: BLUE, borderRadius: 4 },
           { label: 'Simple sum (8)', data: [22.42, 71.94, 77.70], backgroundColor: AMBER, borderRadius: 4 },
           { label: 'Portfolio (8)', data: [19.35, 77.60, 82.40], backgroundColor: TEAL, borderRadius: 4 }
         ]
@@ -1137,6 +1536,172 @@ function renderCharts(tab) {
 
 // Render overview charts on load
 renderCharts('overview');
+
+// ═══════════════════════════════════════════
+// CORRELATIONS TAB
+// ═══════════════════════════════════════════
+
+const SHIPS_ALL = [
+  { id:1, name:'GasLog Italy',    route:'US→EU',       openPL:2.53, sig:3.82, supplyBm:'HH',    destBm:'TTF', bms:'HH / TTF' },
+  { id:2, name:'Kalymnos',        route:'NGA→Asia',    openPL:9.31, sig:4.21, supplyBm:'Brent', destBm:'JKM', bms:'Brent / JKM' },
+  { id:3, name:'Kastelorizo',     route:'NGA→EU',      openPL:2.95, sig:2.94, supplyBm:'Brent', destBm:'TTF', bms:'Brent / TTF' },
+  { id:4, name:'Achilles',        route:'AUS→Asia',    openPL:0.99, sig:1.44, supplyBm:'Brent', destBm:'JKM', bms:'Brent / JKM' },
+  { id:5, name:'Delphi',          route:'NGA→EU',      openPL:8.16, sig:4.18, supplyBm:'Brent', destBm:'TTF', bms:'Brent / TTF' },
+  { id:6, name:'Seapeak Galicia', route:'US→EU',       openPL:7.86, sig:3.74, supplyBm:'HH',    destBm:'TTF', bms:'HH / TTF' },
+  { id:7, name:'W1',              route:'Atlantic→EU', openPL:6.80, sig:3.50, supplyBm:'Mixed', destBm:'TTF', bms:'Mixed / TTF' },
+  { id:8, name:'W2',              route:'→AUS/Asia',   openPL:4.90, sig:3.20, supplyBm:'Mixed', destBm:'JKM', bms:'Mixed / JKM' },
+];
+
+const CORR_DEFS = [
+  { key:'ttf_jkm',   label:'TTF ↔ JKM',   base:0.75, hi:0.90, lo:0.20, role:'Risk concentrator — limits swing escape' },
+  { key:'hh_brent',  label:'HH ↔ Brent',  base:0.15, hi:0.90, lo:0.20, role:'Major diversifier — US vs oil ships' },
+  { key:'hh_ttf',    label:'HH ↔ TTF',    base:0.25, hi:0.90, lo:0.20, role:'Diversifier — US supply / EU price' },
+  { key:'hh_jkm',    label:'HH ↔ JKM',    base:0.20, hi:0.90, lo:0.20, role:'Diversifier — US supply / Asia price' },
+  { key:'brent_ttf', label:'Brent ↔ TTF', base:0.40, hi:0.90, lo:0.20, role:'Moderate link — oil / EU gas' },
+  { key:'brent_jkm', label:'Brent ↔ JKM', base:0.35, hi:0.90, lo:0.20, role:'Moderate link — oil / Asia gas' },
+];
+
+let activeFleet = 8;
+let SHIPS = SHIPS_ALL.slice();
+const BASE_6 = { epl:88.34, std:16.82, cvar:59.14, locked:55.94 };
+const BASE_8 = { epl:115.90, std:20.10, cvar:81.20, locked:75.59 };
+
+function setFleet(n) {
+  activeFleet = n;
+  SHIPS = n === 6 ? SHIPS_ALL.slice(0,6) : SHIPS_ALL.slice();
+  initCorrelations();
+}
+
+// Compute spread vol for a ship given a correlation preset
+function spreadVolFor(ship, preset) {
+  const sigS = ship.supplyBm==='HH' ? 0.45 : ship.supplyBm==='Brent' ? 0.28 : 0.36;
+  const sigD = ship.destBm==='TTF' ? 0.35 : 0.30;
+  const keyMap = { 'HH_TTF':'hh_ttf','HH_JKM':'hh_jkm','Brent_TTF':'brent_ttf','Brent_JKM':'brent_jkm','Mixed_TTF':'brent_ttf','Mixed_JKM':'brent_jkm' };
+  const k = keyMap[ship.supplyBm+'_'+ship.destBm] || 'brent_ttf';
+  const d = CORR_DEFS.find(x=>x.key===k);
+  const r = preset==='hi' ? d.hi : preset==='lo' ? d.lo : d.base;
+  return Math.sqrt(sigS*sigS + sigD*sigD - 2*r*sigS*sigD);
+}
+
+function crossRhoFor(s1, s2, preset) {
+  const keyMap = { 'HH_TTF':'hh_ttf','HH_JKM':'hh_jkm','Brent_TTF':'brent_ttf','Brent_JKM':'brent_jkm','Mixed_TTF':'brent_ttf','Mixed_JKM':'brent_jkm','HH_Brent':'hh_brent','Brent_HH':'hh_brent','HH_HH':'hh_ttf','Brent_Brent':'brent_ttf','Mixed_Mixed':'brent_ttf','Mixed_HH':'hh_brent','HH_Mixed':'hh_brent','Mixed_Brent':'hh_brent','Brent_Mixed':'hh_brent','TTF_TTF':'ttf_jkm','JKM_JKM':'ttf_jkm','TTF_JKM':'ttf_jkm','JKM_TTF':'ttf_jkm' };
+  const sk = s1.supplyBm+'_'+s2.supplyBm, dk = s1.destBm+'_'+s2.destBm;
+  const sr = CORR_DEFS.find(x=>x.key===(keyMap[sk]||'hh_brent'));
+  const dr = CORR_DEFS.find(x=>x.key===(keyMap[dk]||'ttf_jkm'));
+  const sv = preset==='hi'?sr.hi:preset==='lo'?sr.lo:sr.base;
+  const dv = preset==='hi'?dr.hi:preset==='lo'?dr.lo:dr.base;
+  return 0.5*sv + 0.5*dv;
+}
+
+function calcScenario(preset) {
+  const baseVols = SHIPS.map(s => spreadVolFor(s, 'base'));
+  const newVols  = SHIPS.map(s => spreadVolFor(s, preset));
+  const afs  = SHIPS.map((_,i) => newVols[i]/baseVols[i]);
+  const aStds = SHIPS.map((s,i) => s.sig * afs[i]);
+  const aOPL  = SHIPS.map((s,i) => s.openPL * afs[i]);
+  let pv = 0;
+  for(let i=0;i<SHIPS.length;i++) for(let j=0;j<SHIPS.length;j++) {
+    const cr = i===j ? 1 : crossRhoFor(SHIPS[i], SHIPS[j], preset);
+    pv += aStds[i]*aStds[j]*cr;
+  }
+  const std = Math.sqrt(pv);
+  const BASE = activeFleet===6 ? BASE_6 : BASE_8;
+  const baseOpenEPL = SHIPS.reduce((a,s)=>a+s.openPL,0);
+  const newOpenEPL  = aOPL.reduce((a,v)=>a+v,0);
+  const oRatio = baseOpenEPL>0 ? newOpenEPL/baseOpenEPL : 1;
+  const epl = BASE.locked + (BASE.epl - BASE.locked)*oRatio;
+  const cvar = epl - 1.76*std;
+  return { epl, std, cvar, afs, aOPL };
+}
+
+let corrScenariosChart = null;
+
+function initCorrelations() {
+  const cur = calcScenario('base');
+  const hi  = calcScenario('hi');
+  const lo  = calcScenario('lo');
+
+  // 1. Correlation pairs table
+  const pairsTbody = document.getElementById('corr-pairs-tbody');
+  if(pairsTbody) {
+    pairsTbody.innerHTML = CORR_DEFS.map(d => `
+      <tr>
+        <td style="font-family:'Courier New',monospace;font-size:11px">${d.label}</td>
+        <td class="r">${d.base.toFixed(2)}</td>
+        <td class="r" style="color:#ef5350">${d.hi.toFixed(2)}</td>
+        <td class="r" style="color:var(--g)">${d.lo.toFixed(2)}</td>
+        <td style="font-size:10px;color:var(--m)">${d.role}</td>
+      </tr>`).join('');
+  }
+
+  // 2. Portfolio results table
+  const resultsTbody = document.getElementById('corr-results-tbody');
+  if(resultsTbody) {
+    const BASE = activeFleet===6 ? BASE_6 : BASE_8;
+    const metrics = [
+      { label:'E[P&L]', cur:cur.epl, hi:hi.epl, lo:lo.epl, fmt:v=>'$'+v.toFixed(1)+'M', dir:'↑ = better', hiCls: hi.epl>cur.epl?'green':'red', loCls: lo.epl<cur.epl?'amber':'green' },
+      { label:'Std Dev', cur:cur.std, hi:hi.std, lo:lo.std, fmt:v=>'$'+v.toFixed(1)+'M', dir:'↓ = better', hiCls:'red', loCls:'green' },
+      { label:'CVaR (P5)', cur:cur.cvar, hi:hi.cvar, lo:lo.cvar, fmt:v=>'$'+v.toFixed(1)+'M', dir:'↑ = better', hiCls: hi.cvar>cur.cvar?'green':'red', loCls: lo.cvar>cur.cvar?'green':'amber' },
+      { label:'Diversif. ratio', cur:cur.std/SHIPS.reduce((a,s)=>a+s.sig,0), hi:hi.std/SHIPS.reduce((a,s)=>a+s.sig,0), lo:lo.std/SHIPS.reduce((a,s)=>a+s.sig,0), fmt:v=>v.toFixed(3)+'×', dir:'↓ = more diversified', hiCls:'red', loCls:'green' },
+    ];
+    resultsTbody.innerHTML = metrics.map(m => `
+      <tr>
+        <td><strong>${m.label}</strong></td>
+        <td class="r"><strong>${m.fmt(m.cur)}</strong></td>
+        <td class="r ${m.hiCls}">${m.fmt(m.hi)}</td>
+        <td class="r ${m.loCls}">${m.fmt(m.lo)}</td>
+        <td style="font-size:10px;color:var(--m)">${m.dir}</td>
+      </tr>`).join('');
+  }
+
+  // 3. Ship-by-ship table
+  const shipTbody = document.getElementById('corr-ship-tbody');
+  if(shipTbody) {
+    shipTbody.innerHTML = SHIPS.map((s,i) => {
+      const c=cur.afs[i], h=hi.afs[i], l=lo.afs[i];
+      return `<tr>
+        <td>${s.id}</td><td>${s.name}</td><td style="font-size:10px">${s.route}</td>
+        <td style="font-size:10px;color:var(--m)">${s.bms}</td>
+        <td class="r">$${s.openPL.toFixed(2)}M</td>
+        <td class="r">$${cur.aOPL[i].toFixed(2)}M</td>
+        <td class="r" style="color:#ef5350">$${hi.aOPL[i].toFixed(2)}M</td>
+        <td class="r" style="color:var(--g)">$${lo.aOPL[i].toFixed(2)}M</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // 4. Scenario bar chart
+  const ctx = document.getElementById('chartCorrScenarios');
+  if(!ctx) return;
+  const labels = ['E[P&L]', 'Std Dev', 'CVaR'];
+  const datasets = [
+    { label:'Current', data:[cur.epl, cur.std, cur.cvar], backgroundColor:'rgba(66,165,245,0.7)', borderColor:BLUE, borderWidth:1, borderRadius:4 },
+    { label:'High corr (90%)', data:[hi.epl, hi.std, hi.cvar], backgroundColor:'rgba(239,83,80,0.6)', borderColor:RED, borderWidth:1, borderRadius:4 },
+    { label:'Low corr (20%)', data:[lo.epl, lo.std, lo.cvar], backgroundColor:'rgba(77,182,172,0.7)', borderColor:TEAL, borderWidth:1, borderRadius:4 },
+  ];
+  if(corrScenariosChart) {
+    datasets.forEach((d,i)=>{ corrScenariosChart.data.datasets[i].data=d.data; corrScenariosChart.data.datasets[i].label=d.label; });
+    corrScenariosChart.update();
+  } else {
+    corrScenariosChart = new Chart(ctx.getContext('2d'), {
+      type:'bar',
+      data:{ labels, datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:legendOpts },
+        scales:{
+          x:{ ticks:{...tickOpts}, grid:gridOpts('x') },
+          y:{ ticks:{...tickOpts, callback:v=>'$'+v.toFixed(0)+'M'}, grid:gridOpts('y') }
+        }
+      }
+    });
+  }
+}
+
+
+
+
+
 </script>
 </body>
 </html>
