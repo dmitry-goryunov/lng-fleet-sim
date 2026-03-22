@@ -3,1105 +3,310 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENI LNG Fleet Optimization — v6</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>ENI LNG Fleet Optimizer v7</title>
 <style>
-:root{--bg:#07111f;--surface:#0d1e33;--panel:#112240;--border:rgba(56,189,248,0.12);--border2:rgba(56,189,248,0.25);--accent:#38bdf8;--accent2:#0ea5e9;--gold:#f59e0b;--green:#34d399;--red:#f87171;--muted:#64a0c0;--text:#cce4f4;--text2:#88b8d8;--mono:'DM Mono',monospace;--sans:'Syne',sans-serif}
+:root{--n0:#0b1320;--n1:#101b2e;--n2:#152440;--n3:#1a2d50;--a1:#1976d2;--a2:#42a5f5;--t1:#00897b;--t2:#4db6ac;--g1:#c59a2e;--r1:#e53935;--tx:#c0d4e8;--tx2:#7e99b4;--bdr:rgba(25,118,210,0.15)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.6;min-height:100vh}
-.header{background:var(--surface);border-bottom:1px solid var(--border2);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:12px}
-.hdr-left{display:flex;align-items:center;gap:14px}
-.logo{width:40px;height:40px;background:var(--accent2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-weight:800;font-size:19px;color:#fff;flex-shrink:0}
-.hdr-title{font-family:var(--sans);font-weight:700;font-size:14px;color:#e8f4fc}
-.hdr-sub{font-size:11px;color:var(--muted);margin-top:1px}
-.pills{display:flex;gap:6px;flex-wrap:wrap}
-.pill{font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--accent);letter-spacing:.4px}
-.pill.gold{color:var(--gold);border-color:rgba(245,158,11,.3)}
-.pill.warn{color:var(--red);border-color:rgba(248,113,113,.3)}
-.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.nav::-webkit-scrollbar{display:none}
-.tab{padding:11px 18px;font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;user-select:none;-webkit-tap-highlight-color:transparent}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.content{padding:24px 28px;max-width:1380px;margin:0 auto}
-.section{display:none}
-.section.active{display:block}
-.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px}
-.kpi{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:13px 15px;position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);opacity:.5}
-.kpi.gold::before{background:var(--gold)}
-.kpi.green::before{background:var(--green)}
-.kpi.red::before{background:var(--red)}
-.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
-.kpi-value{font-family:var(--sans);font-size:20px;font-weight:700;color:#e8f4fc}
-.kpi-sub{font-size:10px;color:var(--muted);margin-top:2px}
-.sec-title{font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
-@media(max-width:860px){.grid-2,.grid-3,.sc-grid{grid-template-columns:1fr}}
-@media(max-width:600px){
-  .header{padding:10px 14px;gap:8px}
-  .logo{width:32px;height:32px;font-size:15px;border-radius:8px}
-  .hdr-title{font-size:12px}
-  .hdr-sub{font-size:10px}
-  .pills{display:none}
-  .nav{padding:0 8px}
-  .tab{padding:9px 10px;font-size:10px;letter-spacing:.3px}
-  .content{padding:12px 10px}
-  .kpi-strip{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-  .kpi{padding:10px 12px}
-  .kpi-value{font-size:16px}
-  .kpi-label{font-size:9px}
-  .kpi-sub{font-size:9px}
-  .card{padding:12px 11px;border-radius:9px;margin-bottom:13px}
-  .card-title{font-size:10px;margin-bottom:11px}
-  .tbl{font-size:11px}
-  .tbl th{font-size:9px;padding:4px 6px}
-  .tbl td{padding:6px 6px}
-  .uplift{flex-direction:column;gap:8px;padding:11px 13px}
-  .uplift-num{font-size:20px}
-  .uplift-text{font-size:11px}
-  .warnbox{font-size:11px;padding:11px 13px}
-  .note{font-size:11px;padding:11px 13px}
-  .fn{font-size:9px}
-  .sec-title{font-size:11px}
-  .chart-wrap canvas{max-height:170px}
-  .sc-grid{gap:10px;margin-bottom:14px}
-  .sc-card{padding:12px 13px}
-  .sc-val{font-size:20px}
-}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px}
-.card-title{font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);margin-bottom:14px}
-.tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl th{text-align:left;padding:5px 9px;font-size:10px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border2)}
-.tbl td{padding:7px 9px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
-.tbl tr:last-child td{border-bottom:none}
-.tbl tr:hover td{background:rgba(56,189,248,.04)}
-.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
-.tbl td.green{color:var(--green)}
-.tbl td.gold{color:var(--gold)}
-.tbl td.red{color:var(--red)}
-.tbl td.blue{color:var(--accent)}
-.tbl td.muted{color:var(--muted);font-size:11px}
-.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500;letter-spacing:.3px}
-.bc{background:rgba(56,189,248,.12);color:var(--accent);border:1px solid rgba(56,189,248,.2)}
-.bs{background:rgba(245,158,11,.12);color:var(--gold);border:1px solid rgba(245,158,11,.2)}
-.bf{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.2)}
-.bd{background:rgba(129,140,248,.12);color:#a5b4fc;border:1px solid rgba(129,140,248,.2)}
-.bg-gap{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.2)}
-.action{font-size:10px;color:var(--text2);background:rgba(56,189,248,.05);border:1px solid var(--border);border-radius:4px;padding:3px 7px;white-space:nowrap}
-.hbar-wrap{display:flex;align-items:center;gap:7px}
-.hbar-bg{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.hbar-fill{height:100%;border-radius:3px;background:var(--accent)}
-.hbar-pct{font-size:11px;color:var(--text2);min-width:28px;text-align:right}
-.chart-wrap{position:relative}
-.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
-.sc-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:15px 18px}
-.sc-card.hi{border-color:var(--accent);background:rgba(56,189,248,.05)}
-.sc-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px}
-.sc-val{font-family:var(--sans);font-size:24px;font-weight:700;color:#e8f4fc}
-.sc-sub{font-size:11px;color:var(--muted);margin-top:3px}
-.sc-row{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
-.sc-item .lbl{font-size:10px;color:var(--muted)}
-.sc-item .val{font-size:13px;font-weight:500;color:var(--text);margin-top:1px}
-.uplift{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25);border-radius:10px;padding:13px 18px;display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.uplift-num{font-family:var(--sans);font-size:26px;font-weight:800;color:var(--green);white-space:nowrap}
-.uplift-text{font-size:12px;color:var(--text2);line-height:1.55}
-.warnbox{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:13px 18px;margin-bottom:18px;font-size:12px;color:var(--text2);line-height:1.65}
-.warnbox strong{color:var(--red)}
-.note{background:rgba(56,189,248,.04);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:12px;color:var(--text2);line-height:1.7;margin-top:18px}
-.note strong{color:var(--text)}
-.fn{font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6}
-.ra{color:var(--accent);margin:0 3px}
-.sweep-hl td{color:var(--green)!important}
-.sweep-hl{background:rgba(52,211,153,.07)!important}
-@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.card,.kpi,.sc-card,.uplift,.warnbox{animation:fadeup .3s ease both}
+body{background:#080e1a;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:16px;font-family:'Courier New',monospace}
+#w{background:var(--n0);color:var(--tx);display:flex;flex-direction:column;height:92vh;max-height:800px;width:100%;max-width:860px;border-radius:12px;overflow:hidden;border:1px solid var(--bdr)}
+#hd{background:var(--n1);border-bottom:1px solid var(--bdr);padding:14px 20px;display:flex;align-items:center;gap:12px}
+#hd .lg{width:36px;height:36px;background:var(--a1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+#hd h1{font-size:13px;font-weight:700;color:#e0eaf5;letter-spacing:1.2px;text-transform:uppercase}
+#hd p{font-size:10px;color:var(--tx2);margin-top:2px}
+#pills{display:flex;gap:0;border-bottom:1px solid var(--bdr);background:rgba(10,19,32,0.9);overflow-x:auto;scrollbar-width:none}
+#pills::-webkit-scrollbar{display:none}
+.pl{padding:7px 12px;font-size:9.5px;color:var(--tx2);border-right:1px solid var(--bdr);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.pl .n{width:15px;height:15px;border-radius:50%;background:var(--a1);font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.pl.up .n{background:var(--t1)}
+#sb{display:flex;gap:14px;padding:7px 20px;background:rgba(10,19,32,0.6);border-bottom:1px solid var(--bdr);overflow-x:auto;scrollbar-width:none;font-size:10px}
+#sb::-webkit-scrollbar{display:none}
+.sp{display:flex;align-items:center;gap:5px;white-space:nowrap;color:var(--tx2)}
+.sp .d{width:6px;height:6px;border-radius:50%;background:var(--t1)}
+.sp .d.am{background:var(--g1)}
+.sp .d.rd{background:var(--r1)}
+.sp strong{color:var(--tx);font-weight:600}
+#msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin}
+.msg{display:flex;gap:10px;max-width:92%}
+.msg.ai{align-self:flex-start}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.av{width:28px;height:28px;border-radius:7px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.av.ai{background:var(--a1);color:#fff}
+.av.user{background:var(--t1);color:#fff}
+.bbl{background:var(--n2);border:1px solid var(--bdr);border-radius:8px;padding:11px 14px;font-size:12.5px;line-height:1.6}
+.msg.user .bbl{background:rgba(0,137,123,0.1);border-color:rgba(0,137,123,0.2)}
+.tg{display:inline-block;background:rgba(25,118,210,0.12);color:var(--a2);padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;margin:0 2px}
+.up{color:var(--t2);font-weight:600;font-size:10px;display:inline-block;background:rgba(0,137,123,0.1);padding:1px 6px;border-radius:3px;margin:0 2px}
+.typing{display:flex;gap:4px;align-items:center;padding:6px}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--a2);opacity:0.4;animation:pulse 1.4s infinite}
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes pulse{0%,80%,100%{opacity:0.4;transform:scale(1)}40%{opacity:1;transform:scale(1.2)}}
+#qp{display:flex;gap:7px;padding:10px 20px;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--bdr)}
+#qp::-webkit-scrollbar{display:none}
+.qb{background:var(--n2);border:1px solid var(--bdr);border-radius:7px;padding:7px 12px;font-size:10.5px;color:var(--tx);cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s}
+.qb:hover{border-color:var(--a1);color:var(--a2);background:rgba(25,118,210,0.06)}
+#ir{display:flex;gap:10px;padding:12px 20px;border-top:1px solid var(--bdr);background:var(--n1)}
+#ui{flex:1;background:var(--n2);border:1px solid var(--bdr);border-radius:7px;color:var(--tx);font-family:inherit;font-size:12.5px;padding:9px 12px;resize:none;outline:none;min-height:38px;max-height:90px;scrollbar-width:thin}
+#ui::placeholder{color:var(--tx2)}
+#ui:focus{border-color:var(--a1)}
+#sb2{background:var(--a1);border:none;border-radius:7px;color:#fff;cursor:pointer;padding:9px 16px;font-size:12px;font-family:inherit;font-weight:600;transition:background 0.15s;height:38px;align-self:flex-end}
+#sb2:hover{background:var(--a2)}
+#sb2:disabled{opacity:0.5;cursor:not-allowed}
+.note{font-size:10px;color:var(--tx2);text-align:center;padding:4px;border-top:1px solid var(--bdr);background:var(--n1)}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div class="hdr-left">
-    <div class="logo">E</div>
-    <div>
-      <div class="hdr-title">ENI LNG Fleet Optimization — v6</div>
-      <div class="hdr-sub">eni_fleet_optimization_v6_executed.ipynb · 6 vessels · March 2026</div>
+<div id="w">
+  <div id="hd">
+    <div class="lg">E</div>
+    <div style="flex:1">
+      <h1>ENI LNG Fleet Optimizer v7</h1>
+      <p>Real-options &middot; Regime-switching &middot; Canal risk &middot; Vessel-specific costs</p>
     </div>
   </div>
-  <div class="pills">
-    <span class="pill">Brent $82.0</span>
-    <span class="pill">HH $2.40</span>
-    <span class="pill">TTF $11.50</span>
-    <span class="pill">JKM $13.20</span>
-    <span class="pill gold">E[P&amp;L] $88.04M</span>
-    <span class="pill warn">Freight UNHEDGED</span>
+  <div id="pills">
+    <div class="pl"><span class="n">1</span> Route matrix</div>
+    <div class="pl"><span class="n">2</span> Ship matrix</div>
+    <div class="pl"><span class="n">3</span> Hedge layer</div>
+    <div class="pl"><span class="n">4</span> Stochastic</div>
+    <div class="pl"><span class="n">5</span> Portfolio</div>
+    <div class="pl up"><span class="n">+</span> Canal risk</div>
+    <div class="pl up"><span class="n">+</span> Real options</div>
+    <div class="pl up"><span class="n">+</span> Regime switch</div>
   </div>
-</div>
-
-<div class="nav">
-  <div class="tab active" onclick="showTab('overview',this)">Overview</div>
-  <div class="tab" onclick="showTab('positions',this)">Positions</div>
-  <div class="tab" onclick="showTab('correlations',this)">Correlations</div>
-  <div class="tab" onclick="showTab('routes',this)">Route Matrix</div>
-  <div class="tab" onclick="showTab('fleet',this)">Ship Matrix</div>
-  <div class="tab" onclick="showTab('hedge',this)">Hedge Dashboard</div>
-  <div class="tab" onclick="showTab('scenarios',this)">Scenarios</div>
-  <div class="tab" onclick="showTab('sweep',this)">Hedge Sweep</div>
-  <div class="tab" onclick="showTab('actions',this)">Action List</div>
-</div>
-
-<!-- mobile benchmark strip — visible only on small screens -->
-<div id="mob-bench" style="display:none;overflow-x:auto;white-space:nowrap;padding:7px 12px;background:var(--surface);border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);-webkit-overflow-scrolling:touch;scrollbar-width:none">
-  <span style="margin-right:14px">Brent <strong style="color:var(--text)">$82.0</strong></span>
-  <span style="margin-right:14px">HH <strong style="color:var(--text)">$2.40</strong></span>
-  <span style="margin-right:14px">TTF <strong style="color:var(--text)">$11.50</strong></span>
-  <span style="margin-right:14px">JKM <strong style="color:var(--text)">$13.20</strong></span>
-  <span style="margin-right:14px">E[P&amp;L] <strong style="color:var(--green)">$88.04M</strong></span>
-  <span>Freight <strong style="color:var(--red)">UNHEDGED</strong></span>
-</div>
-
-<style>
-@media(max-width:600px){
-  #mob-bench{display:block!important}
-  #mob-bench::-webkit-scrollbar{display:none}
-}
-</style>
-
-<!-- OVERVIEW -->
-<div class="section active" id="tab-overview">
-  <div class="kpi-strip">
-    <div class="kpi green"><div class="kpi-label">Expected P&amp;L</div><div class="kpi-value">$88.04M</div><div class="kpi-sub">Fixed routes · 2,000 paths</div></div>
-    <div class="kpi green"><div class="kpi-label">Two-stage E[P&amp;L]</div><div class="kpi-value">$93.25M</div><div class="kpi-sub">+$5.21M swing uplift</div></div>
-    <div class="kpi"><div class="kpi-label">Locked P&amp;L</div><div class="kpi-value">$55.94M</div><div class="kpi-sub">Hedged across fleet</div></div>
-    <div class="kpi gold"><div class="kpi-label">Open P&amp;L</div><div class="kpi-value">$31.80M</div><div class="kpi-sub">Unhedged remaining</div></div>
-    <div class="kpi"><div class="kpi-label">CVaR (P5)</div><div class="kpi-value">$63.64M</div><div class="kpi-sub">Expected shortfall</div></div>
-    <div class="kpi red"><div class="kpi-label">Freight Gap</div><div class="kpi-value">6 / 6</div><div class="kpi-sub">All vessels unhedged</div></div>
+  <div id="sb">
+    <div class="sp"><span class="d"></span> 6 vessels <strong>active</strong></div>
+    <div class="sp"><span class="d"></span> Supply <strong>US / NGA / AUS</strong></div>
+    <div class="sp"><span class="d am"></span> Boil-off <strong>DES-linked</strong></div>
+    <div class="sp"><span class="d rd"></span> Suez <strong>stochastic</strong></div>
   </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Fleet Composition &amp; Cargo Status</div>
-      <table class="tbl">
-        <thead><tr><th>Vessel</th><th>Capacity</th><th>Status</th><th>Fullness</th><th>Cat.</th><th>Ctr.</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="blue">GasLog Italy</td><td>174k m³</td>
-            <td><span class="badge bd">Ballasting</span></td>
-            <td style="min-width:120px">
-              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:5%;background:var(--muted)"></div></div><span class="hbar-pct muted">~5%</span></div>
-              <div style="font-size:10px;color:var(--muted);margin-top:2px">Heel only · en route US Gulf to reload</div>
-            </td>
-            <td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td>
-          </tr>
-          <tr>
-            <td class="blue">Maran Gas Kalymnos</td><td>174k m³</td>
-            <td><span class="badge bs">For Orders</span></td>
-            <td style="min-width:120px">
-              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:98%;background:var(--green)"></div></div><span class="hbar-pct green">~98%</span></div>
-              <div style="font-size:10px;color:var(--muted);margin-top:2px">Laden · Alboran Sea · awaiting destination order</div>
-            </td>
-            <td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td>
-          </tr>
-          <tr>
-            <td class="blue">Maran Gas Kastelorizo</td><td>174k m³</td>
-            <td><span class="badge bf">Loading</span></td>
-            <td style="min-width:120px">
-              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:60%;background:var(--accent)"></div></div><span class="hbar-pct blue">~60%</span></div>
-              <div style="font-size:10px;color:var(--muted);margin-top:2px">Loading at Destrehan LA · US cargo</div>
-            </td>
-            <td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td>
-          </tr>
-          <tr>
-            <td class="blue">Maran Gas Achilles</td><td>174k m³</td>
-            <td><span class="badge bd">Laden</span></td>
-            <td style="min-width:120px">
-              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:95%;background:var(--green)"></div></div><span class="hbar-pct green">~95%</span></div>
-              <div style="font-size:10px;color:var(--muted);margin-top:2px">Full · Arabian Sea → Dahej India</div>
-            </td>
-            <td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td>
-          </tr>
-          <tr>
-            <td class="blue">Maran Gas Delphi</td><td>160k m³</td>
-            <td><span class="badge bs">For Orders</span></td>
-            <td style="min-width:120px">
-              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:8%;background:var(--muted)"></div></div><span class="hbar-pct muted">~8%</span></div>
-              <div style="font-size:10px;color:var(--muted);margin-top:2px">Heel only · ballasting N off Namibia · ~7d to Bonny</div>
-            </td>
-            <td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td>
-          </tr>
-          <tr>
-            <td class="blue">Seapeak Galicia</td><td>140k m³</td>
-            <td><span class="badge bs">For Orders</span></td>
-            <td style="min-width:120px">
-              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:8%;background:var(--muted)"></div></div><span class="hbar-pct muted">~8%</span></div>
-              <div style="font-size:10px;color:var(--muted);margin-top:2px">Heel only · slow steaming 9.2kn · W. Africa</div>
-            </td>
-            <td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="fn">Fullness estimates from latest AIS data (March 2026) · Heel ≈ boil-off retention only · Total capacity 996k m³ · 3 DES committed · 3 FOB swing</div>
-    </div>
-    <div class="card">
-      <div class="card-title">Locked vs Open P&amp;L per Vessel</div>
-      <div class="chart-wrap" style="height:220px"><canvas id="cPnl"></canvas></div>
-    </div>
-  </div>
-
-  <div class="uplift">
-    <div class="uplift-num">+$5.21M</div>
-    <div class="uplift-text">
-      <strong style="color:var(--green)">Two-stage optimality uplift</strong> from preserving swing-ship route flexibility.<br>
-      Kalymnos, Delphi, Galicia re-route after prices evolve over the 90-day horizon. P5 +$3.84M · CVaR +$3.85M · P95 +$5.96M.<br>
-      Optionality must be priced explicitly — not treated as a residual.
-    </div>
-  </div>
-
-  <div class="warnbox">
-    <strong>OPEN RISK GAP — FREIGHT UNHEDGED ACROSS ALL 6 VESSELS</strong><br>
-    OU freight (κ=3.0, σ=0.35) contributes ~8–15% of portfolio P&amp;L variance. Priority candidates: Ships 2, 5, 6 (FOB swing). Recommended: Baltic FFA or LNG freight index swap.
-  </div>
-
-  <div class="card">
-    <div class="card-title">Model Assumptions &amp; Limitations</div>
-    <table class="tbl">
-      <thead><tr><th>Parameter</th><th>Value / Method</th><th>Note</th></tr></thead>
-      <tbody>
-        <tr><td>Scenarios</td><td class="blue">2,000 paths × 90 days</td><td class="muted">GBM prices + OU freight</td></tr>
-        <tr><td>Boil-off reference</td><td>$12.00/MMBtu fixed</td><td class="muted">Not dest-linked — removes circular dependency</td></tr>
-        <tr><td>Loaded day factor</td><td>0.50 × round-trip days</td><td class="muted">Approximation; Australia→Europe most sensitive</td></tr>
-        <tr><td>Freight model</td><td>OU κ=3.0, θ=1.0, σ=0.35</td><td class="muted">Half-life 58 days · corr TTF=0.27, JKM=0.42</td></tr>
-        <tr><td>Canal routing</td><td>Deterministic</td><td class="muted">Suez/Panama not stochastic</td></tr>
-        <tr><td>Cargo structure</td><td>Single cargo per ship/cycle</td><td class="muted">No multi-cargo or partial load modelling</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ROUTE MATRIX -->
-<div class="section" id="tab-routes">
-  <div class="sec-title">Deterministic Route Matrix — v6</div>
-  <div class="kpi-strip" style="grid-template-columns:repeat(3,1fr)">
-    <div class="kpi green"><div class="kpi-label">Best margin/day</div><div class="kpi-value">$0.2484</div><div class="kpi-sub">Nigeria → Europe (DES)</div></div>
-    <div class="kpi red"><div class="kpi-label">Uneconomic route</div><div class="kpi-value">−$0.28</div><div class="kpi-sub">Australia → Europe DES margin</div></div>
-    <div class="kpi"><div class="kpi-label">Highest raw margin</div><div class="kpi-value">$6.07</div><div class="kpi-sub">US → Asia — but 52 RT days</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Full Route Matrix — ranked by DES Margin/day</div>
-    <div style="overflow-x:auto">
-    <table class="tbl">
-      <thead><tr><th>Origin</th><th>Dest</th><th>FOB $/MMBtu</th><th>Freight</th><th>Boil-off</th><th>Port+Canal</th><th>Total Cost</th><th>FOB Margin</th><th>DES Margin</th><th>RT Days</th><th>FOB $/day</th><th>DES $/day</th></tr></thead>
-      <tbody>
-        <tr><td>Nigeria</td><td>Europe</td><td class="num">6.56</td><td class="num">0.550</td><td class="num">0.108</td><td class="num">0.160</td><td class="num">0.818</td><td class="num green">4.122</td><td class="num green">4.472</td><td class="num">18</td><td class="num green">0.2290</td><td class="num green"><strong>0.2484</strong></td></tr>
-        <tr><td>US</td><td>Europe</td><td class="num">5.40</td><td class="num">0.950</td><td class="num">0.168</td><td class="num">0.220</td><td class="num">1.338</td><td class="num green">4.762</td><td class="num green">5.112</td><td class="num">28</td><td class="num">0.1701</td><td class="num">0.1826</td></tr>
-        <tr><td>Nigeria</td><td>Asia</td><td class="num">6.56</td><td class="num">1.000</td><td class="num">0.228</td><td class="num">0.280</td><td class="num">1.508</td><td class="num green">5.132</td><td class="num green">5.482</td><td class="num">38</td><td class="num">0.1351</td><td class="num">0.1443</td></tr>
-        <tr><td>Australia</td><td>Asia</td><td class="num">9.84</td><td class="num">0.450</td><td class="num">0.132</td><td class="num">0.140</td><td class="num">0.722</td><td class="num">2.638</td><td class="num">2.988</td><td class="num">22</td><td class="num">0.1199</td><td class="num">0.1358</td></tr>
-        <tr><td>US</td><td>Asia</td><td class="num">5.40</td><td class="num">1.350</td><td class="num">0.312</td><td class="num">0.420</td><td class="num">2.082</td><td class="num green">5.718</td><td class="num green">6.068</td><td class="num">52</td><td class="num">0.1100</td><td class="num">0.1167</td></tr>
-        <tr style="opacity:.55"><td>Australia</td><td>Europe</td><td class="num">9.84</td><td class="num">1.550</td><td class="num">0.360</td><td class="num">0.380</td><td class="num">2.290</td><td class="num red">−0.630</td><td class="num red">−0.280</td><td class="num">60</td><td class="num red">−0.0105</td><td class="num red">−0.0047</td></tr>
-      </tbody>
-    </table>
-    </div>
-    <div class="fn">Brent $82/bbl · HH $2.40 · TTF $11.50 · JKM $13.20 · FOB_NGA=0.08×Brent · FOB_AUS=0.12×Brent · FOB_US=HH+$3.00 · Boil-off ref $12/MMBtu fixed</div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">DES Margin/day — Route Ranking</div>
-      <div class="chart-wrap" style="height:210px"><canvas id="cMarginDay"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Cost Decomposition by Route</div>
-      <div class="chart-wrap" style="height:210px"><canvas id="cCosts"></canvas></div>
-    </div>
-  </div>
-
-  <div class="note"><strong>Key insight:</strong> Nigeria→Europe tops on margin/day ($0.249) despite a lower raw DES margin than US→Asia ($6.07). The 18-day round trip vs 52 days completely reverses the ranking. Atlantic bias is correct at current spreads. Australia→Europe is infeasible at −$0.28 DES and only makes sense if TTF spikes above ~$14/MMBtu.</div>
-</div>
-
-<!-- SHIP MATRIX -->
-<div class="section" id="tab-fleet">
-  <div class="sec-title">Ship-by-Ship Fleet Matrix — v4</div>
-  <div class="card">
-    <div class="card-title">Fleet Assignment with Optionality Premiums</div>
-    <div style="overflow-x:auto">
-    <table class="tbl">
-      <thead><tr><th>#</th><th>Vessel</th><th>Basin</th><th>Cat.</th><th>Ctr.</th><th>Best Route</th><th>Base Margin</th><th>Margin/day</th><th>Opt. Prem.</th><th>Eff. Prem.</th><th>Hedge</th><th>Action</th></tr></thead>
-      <tbody>
-        <tr><td class="muted">1</td><td class="blue">GasLog Italy</td><td>Atlantic</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td><td>US<span class="ra">→</span>Europe</td><td class="num green">5.112</td><td class="num">0.183</td><td class="num muted">0.02</td><td class="num muted">0.00</td><td class="num">85%</td><td><span class="action">Fix 85% → EU</span></td></tr>
-        <tr><td class="muted">2</td><td class="blue">Maran Gas Kalymnos</td><td>Atlantic</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td><td>Nigeria<span class="ra">→</span>Asia</td><td class="num green">5.132</td><td class="num">0.135</td><td class="num gold">0.30</td><td class="num gold">0.30</td><td class="num">45%</td><td><span class="action">Hold; hedge 45%</span></td></tr>
-        <tr><td class="muted">3</td><td class="blue">Maran Gas Kastelorizo</td><td>Iberia</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td><td>Nigeria<span class="ra">→</span>Europe</td><td class="num green">4.472</td><td class="num green">0.248</td><td class="num muted">0.03</td><td class="num muted">0.00</td><td class="num">80%</td><td><span class="action">Fix 80% → EU</span></td></tr>
-        <tr><td class="muted">4</td><td class="blue">Maran Gas Achilles</td><td>Pacific</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td><td>Australia<span class="ra">→</span>Asia</td><td class="num">2.988</td><td class="num">0.136</td><td class="num muted">0.02</td><td class="num muted">0.00</td><td class="num">90%</td><td><span class="action">Fix 90% → Asia</span></td></tr>
-        <tr><td class="muted">5</td><td class="blue">Maran Gas Delphi</td><td>W.Africa</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td><td>Nigeria<span class="ra">→</span>Europe</td><td class="num">4.122</td><td class="num">0.229</td><td class="num gold">0.35</td><td class="num gold">0.35</td><td class="num">40%</td><td><span class="action">Hold; hedge 40%</span></td></tr>
-        <tr><td class="muted">6</td><td class="blue">Seapeak Galicia</td><td>US Gulf</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td><td>US<span class="ra">→</span>Europe</td><td class="num">4.762</td><td class="num">0.170</td><td class="num gold">0.20</td><td class="num gold">0.20</td><td class="num">50%</td><td><span class="action">Hold; hedge 50%</span></td></tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Chosen vs Alternative Route Margin</div>
-      <table class="tbl">
-        <thead><tr><th>Ship</th><th>Chosen Route</th><th>Chosen $</th><th>Alt $</th><th>Gap</th><th>Switch?</th></tr></thead>
-        <tbody>
-          <tr><td class="muted">1</td><td>US→EU</td><td class="num green">5.112</td><td class="num muted">6.068 Asia</td><td class="num red">−0.956</td><td class="num red">No (DES)</td></tr>
-          <tr><td class="muted">2</td><td>NGA→Asia</td><td class="num green">5.132</td><td class="num muted">4.122 EU</td><td class="num green">+1.010</td><td class="num green">Yes</td></tr>
-          <tr><td class="muted">3</td><td>NGA→EU</td><td class="num green">4.472</td><td class="num muted">5.482 Asia</td><td class="num red">−1.010</td><td class="num red">No (DES)</td></tr>
-          <tr><td class="muted">4</td><td>AUS→Asia</td><td class="num">2.988</td><td class="num muted">−0.280 EU</td><td class="num green">+3.268</td><td class="num red">No (DES)</td></tr>
-          <tr><td class="muted">5</td><td>NGA→EU</td><td class="num">4.122</td><td class="num muted">5.132 Asia</td><td class="num gold">−1.010</td><td class="num green">Yes</td></tr>
-          <tr><td class="muted">6</td><td>US→EU</td><td class="num">4.762</td><td class="num muted">5.718 Asia</td><td class="num gold">−0.956</td><td class="num green">Yes</td></tr>
-        </tbody>
-      </table>
-      <div class="fn">Ships 1, 3 locked below economic optimum by DES contract. Ships 5 &amp; 6 default Europe — optionality premium justifies holding vs forcing to Asia.</div>
-    </div>
-    <div class="card">
-      <div class="card-title">Adj. Margin/day incl. Optionality</div>
-      <div class="chart-wrap" style="height:210px"><canvas id="cOpt"></canvas></div>
-    </div>
-  </div>
-</div>
-
-<!-- HEDGE DASHBOARD -->
-<div class="section" id="tab-hedge">
-  <div class="sec-title">Hedge Dashboard — v6</div>
-  <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr)">
-    <div class="kpi green"><div class="kpi-label">Total Locked</div><div class="kpi-value">$55.94M</div></div>
-    <div class="kpi gold"><div class="kpi-label">Total Open</div><div class="kpi-value">$31.80M</div></div>
-    <div class="kpi"><div class="kpi-label">Avg DES hedge</div><div class="kpi-value">85%</div><div class="kpi-sub">Committed ships</div></div>
-    <div class="kpi red"><div class="kpi-label">Avg FOB hedge</div><div class="kpi-value">45%</div><div class="kpi-sub">Swing ships</div></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Per-Vessel Hedge Breakdown</div>
-    <table class="tbl">
-      <thead><tr><th>#</th><th>Vessel</th><th>Cat.</th><th>Ctr.</th><th>Hedge Ratio</th><th>Locked $M</th><th>Open $M</th><th>Commodity Hedge</th><th>Freight</th></tr></thead>
-      <tbody>
-        <tr><td class="muted">1</td><td class="blue">GasLog Italy</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td><td><div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:85%"></div></div><span class="hbar-pct">85%</span></div></td><td class="num green">14.34</td><td class="num gold">2.53</td><td>HH + TTF</td><td><span class="badge bg-gap">GAP</span></td></tr>
-        <tr><td class="muted">2</td><td class="blue">Maran Gas Kalymnos</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td><td><div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:45%;background:var(--gold)"></div></div><span class="hbar-pct">45%</span></div></td><td class="num green">7.62</td><td class="num gold">9.31</td><td>Brent + JKM</td><td><span class="badge bg-gap">GAP</span></td></tr>
-        <tr><td class="muted">3</td><td class="blue">Maran Gas Kastelorizo</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td><td><div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:80%"></div></div><span class="hbar-pct">80%</span></div></td><td class="num green">11.81</td><td class="num gold">2.95</td><td>Brent + TTF</td><td><span class="badge bg-gap">GAP</span></td></tr>
-        <tr><td class="muted">4</td><td class="blue">Maran Gas Achilles</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td><td><div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:90%"></div></div><span class="hbar-pct">90%</span></div></td><td class="num green">8.87</td><td class="num gold">0.99</td><td>Brent + JKM</td><td><span class="badge bg-gap">GAP</span></td></tr>
-        <tr><td class="muted">5</td><td class="blue">Maran Gas Delphi</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td><td><div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:40%;background:var(--gold)"></div></div><span class="hbar-pct">40%</span></div></td><td class="num green">5.44</td><td class="num gold">8.16</td><td>Brent + TTF</td><td><span class="badge bg-gap">GAP</span></td></tr>
-        <tr><td class="muted">6</td><td class="blue">Seapeak Galicia</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td><td><div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:50%;background:var(--gold)"></div></div><span class="hbar-pct">50%</span></div></td><td class="num green">7.86</td><td class="num gold">7.86</td><td>HH + TTF</td><td><span class="badge bg-gap">GAP</span></td></tr>
-        <tr style="border-top:2px solid var(--border2)"><td colspan="5" style="text-align:right;padding-right:16px;color:var(--muted);font-size:11px">TOTAL</td><td class="num green"><strong>55.94</strong></td><td class="num gold"><strong>31.80</strong></td><td colspan="2"></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Locked vs Open P&amp;L per Ship</div>
-      <div class="chart-wrap" style="height:210px"><canvas id="cHedge"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Benchmark Exposure Map</div>
-      <table class="tbl" style="margin-top:4px">
-        <thead><tr><th>Benchmark</th><th>Exposure side</th><th>Ships</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>Henry Hub</td><td class="blue">Source cost</td><td>1, 6</td><td class="green">Hedged</td></tr>
-          <tr><td>Brent</td><td class="blue">Source cost</td><td>2, 3, 4, 5</td><td class="green">Hedged</td></tr>
-          <tr><td>TTF</td><td class="blue">Sales price</td><td>1, 3, 5, 6</td><td class="green">Hedged</td></tr>
-          <tr><td>JKM</td><td class="blue">Sales price</td><td>2, 4</td><td class="green">Hedged</td></tr>
-          <tr><td>Baltic FFA / LNG freight</td><td class="red">Freight cost</td><td>All 6</td><td class="red">UNHEDGED</td></tr>
-        </tbody>
-      </table>
-      <div class="fn">Priority freight hedge: Ships 2, 5, 6 (FOB swing — highest optionality, most freight-path-dependent). Instrument: Baltic FFA or LNG freight index swap.</div>
-    </div>
-  </div>
-</div>
-
-<!-- SCENARIOS -->
-<div class="section" id="tab-scenarios">
-  <div class="sec-title">Stochastic Scenario Summary — 2,000 paths × 90 days</div>
-  <div class="sc-grid">
-    <div class="sc-card">
-      <div class="sc-label">Fixed Routes Strategy</div>
-      <div class="sc-val">$88.04M</div>
-      <div class="sc-sub">Expected fleet P&amp;L</div>
-      <div class="sc-row">
-        <div class="sc-item"><div class="lbl">P5</div><div class="val">$67.66M</div></div>
-        <div class="sc-item"><div class="lbl">CVaR</div><div class="val">$63.64M</div></div>
-        <div class="sc-item"><div class="lbl">P95</div><div class="val">$114.32M</div></div>
-        <div class="sc-item"><div class="lbl">Std dev</div><div class="val">$14.16M</div></div>
-      </div>
-    </div>
-    <div class="sc-card hi">
-      <div class="sc-label">Two-Stage Optimisation</div>
-      <div class="sc-val" style="color:var(--green)">$93.25M</div>
-      <div class="sc-sub">Swing ships re-route after price evolution</div>
-      <div class="sc-row">
-        <div class="sc-item"><div class="lbl">P5</div><div class="val" style="color:var(--green)">$71.50M</div></div>
-        <div class="sc-item"><div class="lbl">CVaR</div><div class="val" style="color:var(--green)">$67.49M</div></div>
-        <div class="sc-item"><div class="lbl">P95</div><div class="val" style="color:var(--green)">$120.28M</div></div>
-        <div class="sc-item"><div class="lbl">Std dev</div><div class="val">$14.96M</div></div>
+  <div id="msgs">
+    <div class="msg ai">
+      <div class="av ai">v7</div>
+      <div class="bbl">
+        Fleet optimizer v7 loaded with <span class="up">8 logic upgrades</span> over v6:<br><br>
+        <span class="tg">FIX 1</span> Boil-off valued at destination price, not flat $12<br>
+        <span class="tg">FIX 2</span> Vessel-specific $/MMBtu (140k vs 174k capacity scaling)<br>
+        <span class="tg">FIX 3</span> Spread-option pricing for swing ship optionality (Margrabe)<br>
+        <span class="tg">FIX 4</span> Suez/Panama canal disruption as stochastic event<br>
+        <span class="tg">FIX 5</span> Regime-switching correlations (normal vs stress)<br>
+        <span class="tg">FIX 6</span> Dynamic hedge rebalancing triggers<br>
+        <span class="tg">FIX 7</span> Ballast repositioning in round-trip cycle time<br>
+        <span class="tg">FIX 8</span> Laytime/demurrage risk at congested terminals<br><br>
+        Ask anything &mdash; route economics, swing ship valuation, canal stress, hedge triggers.
       </div>
     </div>
   </div>
-  <div class="uplift">
-    <div class="uplift-num">+$5.21M</div>
-    <div class="uplift-text">Expected P&amp;L uplift · P5 +$3.84M · CVaR +$3.85M · P95 +$5.96M<br>Source: Kalymnos, Delphi, Galicia selecting optimal destination post price evolution.</div>
+  <div id="qp">
+    <div class="qb" onclick="sendQuick('Show how boil-off valuation changes route rankings vs the old flat $12 model')">Boil-off impact</div>
+    <div class="qb" onclick="sendQuick('Price the spread option on JKM-TTF for the 3 swing ships')">Swing ship options</div>
+    <div class="qb" onclick="sendQuick('What happens to the fleet P&L if Suez is disrupted for 30 days?')">Suez disruption</div>
+    <div class="qb" onclick="sendQuick('Show vessel-specific unit economics: Seapeak Galicia vs the 174k workhorses')">Vessel unit costs</div>
+    <div class="qb" onclick="sendQuick('Compare normal vs stress regime correlations and impact on CVaR')">Regime switch</div>
+    <div class="qb" onclick="sendQuick('What are the dynamic hedge rebalancing trigger thresholds?')">Hedge triggers</div>
   </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">P&amp;L Distribution — Fixed vs Two-Stage</div>
-      <div class="chart-wrap" style="height:220px"><canvas id="cScen"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Price Model Parameters (GBM + OU)</div>
-      <table class="tbl">
-        <thead><tr><th>Factor</th><th>S₀</th><th>σ</th><th>Model</th><th>Final mean</th></tr></thead>
-        <tbody>
-          <tr><td>Brent</td><td>$82.00</td><td class="num">28%</td><td>GBM</td><td class="num">$81.8</td></tr>
-          <tr><td>Henry Hub</td><td>$2.40</td><td class="num">45%</td><td>GBM</td><td class="num">$2.37</td></tr>
-          <tr><td>TTF</td><td>$11.50</td><td class="num">35%</td><td>GBM</td><td class="num">$11.52</td></tr>
-          <tr><td>JKM</td><td>$13.20</td><td class="num">30%</td><td>GBM</td><td class="num">$13.23</td></tr>
-          <tr><td>Freight index</td><td>1.00</td><td class="num">0.35 (OU)</td><td>OU κ=3.0</td><td class="num">1.000</td></tr>
-        </tbody>
-      </table>
-      <div class="fn">Corr: Brent-TTF=0.40, Brent-JKM=0.35, TTF-JKM≈0.70, HH-TTF=0.25<br>Freight OU half-life 58 days · empirical corr TTF=0.27, JKM=0.42</div>
-    </div>
+  <div id="ir">
+    <textarea id="ui" rows="1" placeholder="Ask about route economics, optionality, canal risk, hedge triggers..."></textarea>
+    <button id="sb2" onclick="sendMsg()">SEND</button>
   </div>
+  <div class="note">Requires Anthropic API access &middot; Model: claude-sonnet-4 &middot; See cross-check documentation for methodology</div>
 </div>
-
-<!-- SWEEP -->
-<div class="section" id="tab-sweep">
-  <div class="sec-title">Tiered Hedge Sweep — v4</div>
-  <div class="kpi-strip" style="grid-template-columns:repeat(3,1fr)">
-    <div class="kpi"><div class="kpi-label">Committed band</div><div class="kpi-value">70–100%</div><div class="kpi-sub">Ships 1, 3, 4</div></div>
-    <div class="kpi gold"><div class="kpi-label">Swing band</div><div class="kpi-value">30–60%</div><div class="kpi-sub">Ships 2, 5, 6</div></div>
-    <div class="kpi green"><div class="kpi-label">Operating point</div><div class="kpi-value">t = 0.50</div><div class="kpi-sub">Committed 85%, Swing 45%</div></div>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">E[P&amp;L], P5 and CVaR vs Committed Hedge Ratio</div>
-      <div class="chart-wrap" style="height:220px"><canvas id="cSweep"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Portfolio Volatility vs Hedge Ratio</div>
-      <div class="chart-wrap" style="height:220px"><canvas id="cVol"></canvas></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Full Sweep Table (t=0: band lower bound, t=1: band upper bound)</div>
-    <div style="overflow-x:auto">
-    <table class="tbl">
-      <thead><tr><th>Sweep t</th><th>Committed HR</th><th>Swing HR</th><th>E[P&amp;L] $M</th><th>P5 $M</th><th>CVaR $M</th><th>Volatility</th></tr></thead>
-      <tbody id="sweepBody"></tbody>
-    </table>
-    </div>
-  </div>
-</div>
-
-<!-- ACTIONS -->
-<div class="section" id="tab-actions">
-  <div class="sec-title">Final Portfolio — Ship Action List</div>
-  <div class="grid-3">
-    <div class="card" style="border-color:rgba(56,189,248,.3)">
-      <div class="card-title">Ship 1 — GasLog Italy</div>
-      <table class="tbl"><tr><td class="muted">Basin</td><td class="blue">Atlantic</td></tr><tr><td class="muted">Contract</td><td><span class="badge bd">DES</span></td></tr><tr><td class="muted">Route</td><td>US → Europe</td></tr><tr><td class="muted">Base margin</td><td class="green">$5.112/MMBtu</td></tr><tr><td class="muted">Hedge ratio</td><td>85%</td></tr><tr><td class="muted">Locked P&amp;L</td><td class="green">$14.34M</td></tr><tr><td class="muted">Commodity</td><td>HH + TTF</td></tr></table>
-      <div style="margin-top:10px;padding:7px 11px;background:rgba(56,189,248,.08);border-radius:6px;font-size:11px;color:var(--accent)">▶ Fix 85% → Europe (DES, locked)</div>
-    </div>
-    <div class="card" style="border-color:rgba(245,158,11,.3)">
-      <div class="card-title">Ship 2 — Maran Gas Kalymnos</div>
-      <table class="tbl"><tr><td class="muted">Basin</td><td class="blue">Atlantic</td></tr><tr><td class="muted">Contract</td><td><span class="badge bf">FOB</span></td></tr><tr><td class="muted">Default</td><td>Nigeria → Asia</td></tr><tr><td class="muted">Base margin</td><td class="green">$5.132/MMBtu</td></tr><tr><td class="muted">Hedge ratio</td><td>45%</td></tr><tr><td class="muted">Locked P&amp;L</td><td class="green">$7.62M</td></tr><tr><td class="muted">Option premium</td><td class="gold">$0.30 effective</td></tr></table>
-      <div style="margin-top:10px;padding:7px 11px;background:rgba(245,158,11,.08);border-radius:6px;font-size:11px;color:var(--gold)">▶ Retain optionality; hedge 45%, default Asia</div>
-    </div>
-    <div class="card" style="border-color:rgba(56,189,248,.3)">
-      <div class="card-title">Ship 3 — Maran Gas Kastelorizo</div>
-      <table class="tbl"><tr><td class="muted">Basin</td><td class="blue">Iberia orbit</td></tr><tr><td class="muted">Contract</td><td><span class="badge bd">DES</span></td></tr><tr><td class="muted">Route</td><td>Nigeria → Europe</td></tr><tr><td class="muted">Base margin</td><td class="green">$4.472/MMBtu</td></tr><tr><td class="muted">Margin/day</td><td class="green">$0.248 ← best in fleet</td></tr><tr><td class="muted">Hedge ratio</td><td>80%</td></tr><tr><td class="muted">Locked P&amp;L</td><td class="green">$11.81M</td></tr></table>
-      <div style="margin-top:10px;padding:7px 11px;background:rgba(56,189,248,.08);border-radius:6px;font-size:11px;color:var(--accent)">▶ Fix 80% → Europe (DES, locked)</div>
-    </div>
-    <div class="card" style="border-color:rgba(56,189,248,.3)">
-      <div class="card-title">Ship 4 — Maran Gas Achilles</div>
-      <table class="tbl"><tr><td class="muted">Basin</td><td class="blue">Pacific</td></tr><tr><td class="muted">Contract</td><td><span class="badge bd">DES</span></td></tr><tr><td class="muted">Route</td><td>Australia → Asia</td></tr><tr><td class="muted">Base margin</td><td>$2.988/MMBtu</td></tr><tr><td class="muted">Alt (Europe)</td><td class="red">−$0.280 — infeasible</td></tr><tr><td class="muted">Hedge ratio</td><td>90%</td></tr><tr><td class="muted">Locked P&amp;L</td><td class="green">$8.87M</td></tr></table>
-      <div style="margin-top:10px;padding:7px 11px;background:rgba(56,189,248,.08);border-radius:6px;font-size:11px;color:var(--accent)">▶ Fix 90% → Asia (DES, locked)</div>
-    </div>
-    <div class="card" style="border-color:rgba(245,158,11,.3)">
-      <div class="card-title">Ship 5 — Maran Gas Delphi</div>
-      <table class="tbl"><tr><td class="muted">Basin</td><td class="blue">W.Africa</td></tr><tr><td class="muted">Contract</td><td><span class="badge bf">FOB</span></td></tr><tr><td class="muted">Default</td><td>Nigeria → Europe</td></tr><tr><td class="muted">Base margin</td><td>$4.122/MMBtu</td></tr><tr><td class="muted">Hedge ratio</td><td>40%</td></tr><tr><td class="muted">Locked P&amp;L</td><td class="green">$5.44M</td></tr><tr><td class="muted">Option premium</td><td class="gold">$0.35 effective</td></tr></table>
-      <div style="margin-top:10px;padding:7px 11px;background:rgba(245,158,11,.08);border-radius:6px;font-size:11px;color:var(--gold)">▶ Retain optionality; hedge 40%, default Europe</div>
-    </div>
-    <div class="card" style="border-color:rgba(245,158,11,.3)">
-      <div class="card-title">Ship 6 — Seapeak Galicia</div>
-      <table class="tbl"><tr><td class="muted">Basin</td><td class="blue">US Gulf</td></tr><tr><td class="muted">Contract</td><td><span class="badge bf">FOB</span></td></tr><tr><td class="muted">Default</td><td>US → Europe</td></tr><tr><td class="muted">Base margin</td><td>$4.762/MMBtu</td></tr><tr><td class="muted">Capacity</td><td class="muted">140k m³ — smallest vessel</td></tr><tr><td class="muted">Hedge ratio</td><td>50%</td></tr><tr><td class="muted">Option premium</td><td class="gold">$0.20 effective</td></tr></table>
-      <div style="margin-top:10px;padding:7px 11px;background:rgba(245,158,11,.08);border-radius:6px;font-size:11px;color:var(--gold)">▶ Retain optionality; hedge 50%, default Europe</div>
-    </div>
-  </div>
-
-  <div class="warnbox">
-    <strong>GOVERNANCE CADENCE</strong><br>
-    · <strong>Daily:</strong> Refresh deterministic matrix when ship status or benchmarks change materially<br>
-    · <strong>On price move &gt;5%:</strong> Refresh hedge views, reassess swing ship default destinations<br>
-    · <strong>Weekly minimum:</strong> Re-run stochastic model (2,000 paths) — immediately after large market shocks<br>
-    · <strong>Freight gap priority:</strong> Initiate Baltic FFA or LNG freight swap for Ships 2, 5, 6
-  </div>
-
-  <div class="note"><strong>Bottom line (v6):</strong> Two-stage optimisation adds +$5.21M in expected value by preserving swing-ship optionality across Kalymnos, Delphi, and Galicia. The most valuable assets in this fleet are not the ships with the highest static margin, but those that can respond when TTF–JKM and Brent–HH relationships shift. Reward optionality explicitly — not as a residual.</div>
-</div>
-
-<!-- POSITIONS -->
-<div class="section" id="tab-positions">
-  <div class="sec-title">Portfolio Positions — Primary (Locked) &amp; Secondary (Open)</div>
-
-  <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr)">
-    <div class="kpi green"><div class="kpi-label">Total Locked P&L</div><div class="kpi-value">$55.94M</div><div class="kpi-sub">Primary · hedged spread</div></div>
-    <div class="kpi gold"><div class="kpi-label">Total Open P&L</div><div class="kpi-value">$31.80M</div><div class="kpi-sub">Secondary · unhedged</div></div>
-    <div class="kpi"><div class="kpi-label">DES avg hedge</div><div class="kpi-value">85%</div><div class="kpi-sub">Ships 1, 3, 4 — committed</div></div>
-    <div class="kpi gold"><div class="kpi-label">FOB avg hedge</div><div class="kpi-value">45%</div><div class="kpi-sub">Ships 2, 5, 6 — swing</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Primary Position — Locked Spread (hedged portion of each ship)</div>
-    <div style="overflow-x:auto">
-    <table class="tbl">
-      <thead>
-        <tr>
-          <th>Ship</th><th>Vessel</th><th>Route</th>
-          <th>Supply hedge</th><th>Supply rate</th>
-          <th>Dest. hedge</th><th>Dest. rate</th>
-          <th>Hedge ratio</th><th>Locked P&amp;L</th><th>Locked spread</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="muted">1</td><td class="blue">GasLog Italy</td>
-          <td>US <span class="ra">→</span> Europe</td>
-          <td><span class="badge bf">HH</span></td><td class="num">$2.40</td>
-          <td><span class="badge bf">TTF</span></td><td class="num">$11.50</td>
-          <td class="num">85%</td>
-          <td class="num green">$14.34M</td>
-          <td class="num green">TTF − (HH + $3.00) − cost = <strong>$5.11</strong></td>
-        </tr>
-        <tr>
-          <td class="muted">2</td><td class="blue">Maran Gas Kalymnos</td>
-          <td>Nigeria <span class="ra">→</span> Asia*</td>
-          <td><span class="badge bs">Brent</span></td><td class="num">$82.0/bbl</td>
-          <td><span class="badge bs">JKM</span></td><td class="num">$13.20</td>
-          <td class="num gold">45%</td>
-          <td class="num green">$7.62M</td>
-          <td class="num green">JKM − (0.08×Brent) − cost = <strong>$5.13</strong></td>
-        </tr>
-        <tr>
-          <td class="muted">3</td><td class="blue">Maran Gas Kastelorizo</td>
-          <td>Nigeria <span class="ra">→</span> Europe</td>
-          <td><span class="badge bs">Brent</span></td><td class="num">$82.0/bbl</td>
-          <td><span class="badge bf">TTF</span></td><td class="num">$11.50</td>
-          <td class="num">80%</td>
-          <td class="num green">$11.81M</td>
-          <td class="num green">TTF − (0.08×Brent) − cost = <strong>$4.47</strong></td>
-        </tr>
-        <tr>
-          <td class="muted">4</td><td class="blue">Maran Gas Achilles</td>
-          <td>Australia <span class="ra">→</span> Asia</td>
-          <td><span class="badge bs">Brent</span></td><td class="num">$82.0/bbl</td>
-          <td><span class="badge bs">JKM</span></td><td class="num">$13.20</td>
-          <td class="num">90%</td>
-          <td class="num green">$8.87M</td>
-          <td class="num green">JKM − (0.12×Brent) − cost = <strong>$2.99</strong></td>
-        </tr>
-        <tr>
-          <td class="muted">5</td><td class="blue">Maran Gas Delphi</td>
-          <td>Nigeria <span class="ra">→</span> Europe*</td>
-          <td><span class="badge bs">Brent</span></td><td class="num">$82.0/bbl</td>
-          <td><span class="badge bf">TTF</span></td><td class="num">$11.50</td>
-          <td class="num gold">40%</td>
-          <td class="num green">$5.44M</td>
-          <td class="num green">TTF − (0.08×Brent) − cost = <strong>$4.47</strong></td>
-        </tr>
-        <tr>
-          <td class="muted">6</td><td class="blue">Seapeak Galicia</td>
-          <td>US <span class="ra">→</span> Europe*</td>
-          <td><span class="badge bf">HH</span></td><td class="num">$2.40</td>
-          <td><span class="badge bf">TTF</span></td><td class="num">$11.50</td>
-          <td class="num gold">50%</td>
-          <td class="num green">$7.86M</td>
-          <td class="num green">TTF − (HH + $3.00) − cost = <strong>$4.76</strong></td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-    <div class="fn">* Swing ships: default destination shown. Locked spread = DES margin at time-zero benchmark prices × hedge ratio × 3.3M MMBtu cargo size. Supply hedged via futures on HH (US origin) or Brent (NGA/AUS origin). Destination hedged via TTF (Europe) or JKM (Asia) forward.</div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Secondary Position — Open P&amp;L (unhedged portion, exposed to price moves)</div>
-    <div style="overflow-x:auto">
-    <table class="tbl">
-      <thead>
-        <tr>
-          <th>Ship</th><th>Vessel</th><th>Cat.</th>
-          <th>Open ratio</th><th>Open P&amp;L</th>
-          <th>Supply exposure</th><th>Dest. exposure</th>
-          <th>Alt. destination</th><th>Alt. margin</th><th>Switch trigger</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="muted">1</td><td class="blue">GasLog Italy</td>
-          <td><span class="badge bc">Committed</span></td>
-          <td class="num">15%</td><td class="num gold">$2.53M</td>
-          <td>HH (long)</td><td>TTF (short)</td>
-          <td class="muted">Asia ($6.07) — DES locked, no switch</td>
-          <td class="num muted">6.068</td>
-          <td class="muted red">No switch — DES contract</td>
-        </tr>
-        <tr>
-          <td class="muted">2</td><td class="blue">Maran Gas Kalymnos</td>
-          <td><span class="badge bs">Swing</span></td>
-          <td class="num gold">55%</td><td class="num gold">$9.31M</td>
-          <td>Brent (long)</td><td>JKM (short)</td>
-          <td class="green">Europe ($4.47) — FOB can switch</td>
-          <td class="num">4.472</td>
-          <td class="num green">Switch if JKM − TTF &lt; $1.01</td>
-        </tr>
-        <tr>
-          <td class="muted">3</td><td class="blue">Maran Gas Kastelorizo</td>
-          <td><span class="badge bc">Committed</span></td>
-          <td class="num">20%</td><td class="num gold">$2.95M</td>
-          <td>Brent (long)</td><td>TTF (short)</td>
-          <td class="muted">Asia ($5.48) — DES locked, no switch</td>
-          <td class="num muted">5.482</td>
-          <td class="muted red">No switch — DES contract</td>
-        </tr>
-        <tr>
-          <td class="muted">4</td><td class="blue">Maran Gas Achilles</td>
-          <td><span class="badge bc">Committed</span></td>
-          <td class="num">10%</td><td class="num gold">$0.99M</td>
-          <td>Brent (long)</td><td>JKM (short)</td>
-          <td class="muted">Europe (−$0.28) — DES locked, no switch</td>
-          <td class="num muted red">−0.280</td>
-          <td class="muted red">No switch — DES contract</td>
-        </tr>
-        <tr>
-          <td class="muted">5</td><td class="blue">Maran Gas Delphi</td>
-          <td><span class="badge bs">Swing</span></td>
-          <td class="num gold">60%</td><td class="num gold">$8.16M</td>
-          <td>Brent (long)</td><td>TTF (short)</td>
-          <td class="green">Asia ($5.13) — FOB can switch</td>
-          <td class="num green">5.132</td>
-          <td class="num green">Switch if JKM − TTF &gt; $1.01</td>
-        </tr>
-        <tr>
-          <td class="muted">6</td><td class="blue">Seapeak Galicia</td>
-          <td><span class="badge bs">Swing</span></td>
-          <td class="num gold">50%</td><td class="num gold">$7.86M</td>
-          <td>HH (long)</td><td>TTF (short)</td>
-          <td class="green">Asia ($5.72) — FOB can switch</td>
-          <td class="num green">5.718</td>
-          <td class="num green">Switch if JKM − TTF &gt; $0.96</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-    <div class="fn">
-      Open P&amp;L = base margin × (1 − hedge ratio) × 3.3M MMBtu cargo. "Long supply" = exposed to rising FOB cost (Brent or HH). "Short destination" = exposed to falling DES price (TTF or JKM).<br>
-      Switch trigger = the JKM−TTF spread at which the alternative destination becomes more profitable than the default. Current JKM−TTF = $1.70/MMBtu. Ships 2, 5, 6 are all at or near their trigger thresholds.<br>
-      <strong style="color:var(--red)">Freight unhedged on all 6 vessels</strong> — OU σ=0.35 contributes ~8–15% of P&amp;L variance as additional secondary exposure.
-    </div>
-  </div>
-
-  <div class="note">
-    <strong>Reading the positions:</strong> The primary (locked) position captures the spread at time-zero benchmark prices and is protected from outright moves by the hedge. The secondary (open) position is where the portfolio makes or loses money as prices evolve — and for swing ships, where the two-stage re-routing generates the +$5.21M uplift. The switch triggers for Ships 2, 5, 6 are the key numbers to watch daily: current JKM−TTF of $1.70 sits above Ship 2's trigger ($1.01) and Ship 6's trigger ($0.96), meaning Asia is currently the better default — but the margin is thin for Ship 6.
-  </div>
-</div>
-
-<!-- CORRELATIONS -->
-<div class="section" id="tab-correlations">
-  <div class="sec-title">Correlation Sensitivity — Open P&amp;L Impact</div>
-
-  <div class="note" style="margin-bottom:18px;margin-top:0">
-    Adjust correlations between price benchmarks below. Open P&amp;L for each ship is recalculated using the formula:<br>
-    <strong>Open P&amp;L (adjusted) = Base open P&amp;L × spread_vol_ratio</strong><br>
-    where spread volatility = √(σ²_supply + σ²_dest − 2ρ·σ_supply·σ_dest). Higher correlation = lower spread vol = lower effective open exposure.
-  </div>
-
-  <div class="grid-2">
-    <!-- SLIDERS -->
-    <div class="card">
-      <div class="card-title">Price Benchmark Correlations</div>
-
-      <div style="margin-bottom:20px">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">TTF — JKM <span style="color:var(--text2);font-size:11px;float:right">affects swing ship destination spread</span></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" id="c-ttf-jkm" min="-100" max="100" value="70" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
-          <span id="v-ttf-jkm" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.70</span>
-        </div>
-      </div>
-
-      <div style="margin-bottom:20px">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">HH — TTF <span style="color:var(--text2);font-size:11px;float:right">affects Ships 1 &amp; 6 (US→Europe)</span></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" id="c-hh-ttf" min="-100" max="100" value="25" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
-          <span id="v-hh-ttf" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.25</span>
-        </div>
-      </div>
-
-      <div style="margin-bottom:20px">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">HH — JKM <span style="color:var(--text2);font-size:11px;float:right">affects Ship 2 (Nigeria→Asia, US supply)</span></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" id="c-hh-jkm" min="-100" max="100" value="20" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
-          <span id="v-hh-jkm" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.20</span>
-        </div>
-      </div>
-
-      <div style="margin-bottom:20px">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Brent — TTF <span style="color:var(--text2);font-size:11px;float:right">affects Ships 3 &amp; 5 (Nigeria→Europe)</span></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" id="c-brent-ttf" min="-100" max="100" value="40" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
-          <span id="v-brent-ttf" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.40</span>
-        </div>
-      </div>
-
-      <div style="margin-bottom:20px">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Brent — JKM <span style="color:var(--text2);font-size:11px;float:right">affects Ships 2 &amp; 4 (NGA/AUS→Asia)</span></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" id="c-brent-jkm" min="-100" max="100" value="35" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
-          <span id="v-brent-jkm" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.35</span>
-        </div>
-      </div>
-
-      <div style="margin-bottom:4px">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Freight — Gas (TTF/JKM avg) <span style="color:var(--red);font-size:11px;float:right">all ships — unhedged</span></div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" id="c-freight-gas" min="-100" max="100" value="32" oninput="updateCorr()" style="flex:1;accent-color:var(--red)">
-          <span id="v-freight-gas" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--red)">0.32</span>
-        </div>
-      </div>
-
-      <div style="margin-top:16px;display:flex;gap:10px">
-        <button onclick="resetCorr()" style="flex:1;padding:8px;background:rgba(56,189,248,.08);border:1px solid var(--border2);border-radius:6px;color:var(--accent);font-family:var(--mono);font-size:11px;cursor:pointer">Reset to v6 defaults</button>
-        <button onclick="stressCorr('decouple')" style="flex:1;padding:8px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:6px;color:var(--red);font-family:var(--mono);font-size:11px;cursor:pointer">HH decouple stress</button>
-        <button onclick="stressCorr('high')" style="flex:1;padding:8px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);border-radius:6px;color:var(--green);font-family:var(--mono);font-size:11px;cursor:pointer">High corr scenario</button>
-      </div>
-    </div>
-
-    <!-- CORRELATION MATRIX VISUAL -->
-    <div class="card">
-      <div class="card-title">Correlation Matrix</div>
-      <canvas id="cCorrMatrix" style="width:100%;max-height:260px"></canvas>
-    </div>
-  </div>
-
-  <!-- OPEN P&L TABLE -->
-  <div class="card">
-    <div class="card-title">Open P&amp;L — Adjusted for Current Correlations</div>
-    <div style="overflow-x:auto">
-    <table class="tbl">
-      <thead>
-        <tr>
-          <th>Ship</th><th>Vessel</th><th>Route</th><th>Supply</th><th>Dest.</th>
-          <th>ρ used</th>
-          <th>σ_supply</th><th>σ_dest</th>
-          <th>Spread vol</th>
-          <th>Base open $M</th>
-          <th>Adj. open $M</th>
-          <th>Δ vs base</th>
-        </tr>
-      </thead>
-      <tbody id="corrTableBody"></tbody>
-    </table>
-    </div>
-    <div class="fn" id="corrFootnote"></div>
-  </div>
-
-  <!-- OPEN P&L CHART -->
-  <div class="card">
-    <div class="card-title">Base vs Correlation-Adjusted Open P&amp;L by Ship ($M)</div>
-    <div class="chart-wrap" style="height:220px"><canvas id="cCorrOpen"></canvas></div>
-  </div>
-
-  <div class="note" id="corrNote"></div>
-</div>
-
-</div><!-- /content -->
-
 <script>
-function showTab(id, el) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  el.classList.add('active');
-  initCharts();
-  if (id === 'correlations') updateCorr();
+// ═══════════════════════════════════════════════════════════════
+// SYSTEM PROMPT — ENI LNG FLEET OPTIMIZER v7
+// Full methodology embedded for the AI to reason over
+// ═══════════════════════════════════════════════════════════════
+const SYSTEM = `You are ENI's LNG fleet optimization engine v7 — a major logic upgrade over v6. You manage exactly 6 LNG vessels and reason with the upgraded framework below.
+
+FLEET (6 vessels — no others exist):
+Ship 1: GasLog Italy — 174,000 m³ LNG (~3,688,800 MMBtu), 294.90m × 46m, BOR 0.085%/d, DES committed
+Ship 2: Maran Gas Kalymnos — 174,000 m³ LNG (~3,688,800 MMBtu), 294.90m × 46m, BOR 0.085%/d, FOB swing
+Ship 3: Maran Gas Kastelorizo — 174,000 m³ LNG (~3,688,800 MMBtu), 294.90m × 46m, BOR 0.085%/d, DES committed
+Ship 4: Maran Gas Achilles — 174,000 m³ LNG (~3,688,800 MMBtu), 290m × 46m, BOR 0.085%/d, DES committed
+Ship 5: Maran Gas Delphi — 160,000 m³ LNG (~3,392,000 MMBtu), 294m × 44m, BOR 0.100%/d, FOB swing
+Ship 6: Seapeak Galicia — 140,000 m³ LNG (~2,968,000 MMBtu), 280m × 43m, BOR 0.120%/d, FOB swing
+Conversion: 1 m³ LNG = 21.2 MMBtu. Fleet total: 996,000 m³ = ~21.1M MMBtu/cycle.
+
+VESSEL-SPECIFIC FREIGHT [v7 FIX 2]:
+174k (Ships 1-4): US→EU $0.85, US→Asia $1.60, NGA→EU $0.65, NGA→Asia $1.35, AUS→Asia $0.50, AUS→EU $1.80
+160k (Ship 5): +8% vs 174k on all routes
+140k (Ship 6): +20% vs 174k — structural cost disadvantage on long-haul, advantage at restricted terminals
+
+FOB PRICING:
+US Gulf: FOB = HH × 1.15 + $2.50 (Sabine Pass tolling)
+Nigeria: FOB = 0.08 × Brent (NLNG oil-indexed)
+Australia: FOB = 0.12 × Brent (NWS/GLNG)
+
+DESTINATION: Europe DES = TTF ($/MMBtu), Asia DES = JKM ($/MMBtu)
+
+ROUTE MARGIN [v7]:
+Margin = DES − FOB − Freight(vessel) − BOG(DES-linked) − Port − Canal − E[Demurrage]
+
+BOIL-OFF [v7 FIX 1]:
+BOG_cost = Capacity_MMBtu × BOR × laden_days × DES_price
+v6 used flat $12/MMBtu. v7 uses DES price. When JKM > $12, Asia routes lose $0.03-0.15/MMBtu vs v6.
+
+ROUND-TRIP DAYS [v7 FIX 7]:
+US→NWE: 27d (12L+2D+11B+2W) | US→Asia: 58d (28L+2D+26B+2W)
+NGA→NWE: 23d | NGA→Asia: 46d | AUS→Asia: 19d | AUS→NWE: 62d
+Margin/day = total_cargo_margin / round_trip_days (primary ranking metric)
+
+LAYTIME [v7 FIX 8]:
+NW Europe: P=5%, 1.5d avg, $0.01/MMBtu | Med: P=12%, 2d, $0.03 | Japan/Korea: P=8%, 1d, $0.02 | China: P=20%, 3d, $0.08
+
+CURRENT ASSIGNMENTS (v6 baseline):
+Ship 1 GasLog Italy: Atlantic | Committed DES | US→Europe | HR 85%
+Ship 2 Maran Gas Kalymnos: Atlantic | Swing FOB | Nigeria→Asia default | HR 45%
+Ship 3 Maran Gas Kastelorizo: Iberia | Committed DES | Nigeria→Europe | HR 80%
+Ship 4 Maran Gas Achilles: Pacific | Committed DES | Australia→Asia | HR 90%
+Ship 5 Maran Gas Delphi: W.Africa | Swing FOB | Nigeria→Europe default | HR 40%
+Ship 6 Seapeak Galicia: US Gulf | Swing FOB | US→Europe default | HR 50%
+
+HEDGE TRIGGERS [v7 FIX 6]:
+T1a: JKM−TTF > $3 → +15pp Asia hedge on swings
+T1b: JKM−TTF < $1 → +15pp Europe hedge
+T1c: JKM−TTF < $0 → full Europe hedge
+T2a: HH > $3.50 → −20pp on US-origin | T2b: HH < $1.80 → +20pp
+T3a: Brent > $95 → reduce committed to 70% | T3b: Brent < $70 → push to 95%
+T4a: Freight > 1.5× mean → hedge FFA | T4b: Freight < 0.7× → lock + extend
+
+REGIME-SWITCHING [v7 FIX 5]:
+Normal (π=0.85): TTF-JKM 0.75, TTF-Brent 0.40, JKM-Brent 0.35, HH-TTF 0.25, HH-Brent 0.15
+Stress (π=0.15): TTF-JKM 0.40, TTF-Brent 0.65, JKM-Brent 0.55, HH-TTF 0.10, HH-Brent 0.05
+Transition: P(N→S)=3%/month, P(S→N)=20%/month
+Key: In stress, TTF-JKM DROPS → swing ship option value INCREASES ~55%
+
+CANAL DISRUPTION [v7 FIX 4]:
+Suez: P=8%/voyage. Cape reroute: +12-15 days, +$0.40-0.65/MMBtu freight, +$0.10-0.20 BOG
+Panama: P=3%/voyage. Alternative: +8 days, +$0.30/MMBtu
+Impact: margin/day drops 25-40% on disrupted routes
+
+REAL OPTIONS [v7 FIX 3]:
+Swing ships hold Margrabe exchange option: V = Cargo × [M₁·N(d₁) − M₂·N(d₂)]
+σ_spread = √(σ_JKM² + σ_TTF² − 2ρσ_JKMσ_TTF)
+Normal: σ_spread = 23.5% | Stress: σ_spread = 35.9% (+53%)
+
+PRICE DYNAMICS:
+Brent: GBM σ=28% S₀=$85 | HH: GBM+MR σ=45% S₀=$2.10 κ=2.0 θ=$2.50
+TTF: GBM σ=35% S₀=$11.00 | JKM: GBM σ=30% S₀=$13.50
+Freight: OU σ=35% κ=3.0 θ=1.0 (half-life 58 trading days)
+
+v6 BASELINE:
+Fixed: E[P&L] $88.04M, CVaR $63.64M, Std $14.16M
+Two-stage: E[P&L] $93.25M, CVaR $67.49M, Std $14.96M
+
+v7 IMPACTS:
+DES boil-off: −$0.5M to +$1.2M | Vessel costs: −$0.3M to −$0.8M | Real options: +$0.8M to +$1.5M
+Canal risk: CVaR −$2M to −$4M | Regime switch: CVaR −$5M to −$8M | Dynamic triggers: +$0.5M to +$1.0M
+
+RULES:
+- Always reference vessels by name
+- Never invent vessels beyond the 6 listed
+- When comparing v7 vs v6, specify which fix drives the difference
+- Use $/MMBtu precision
+- Show formula then number when computing
+- Keep responses 4-8 sentences or structured output`;
+
+const msgs = document.getElementById('msgs');
+const input = document.getElementById('ui');
+const btn = document.getElementById('sb2');
+const history = [];
+
+function addMsg(role, html) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  const av = document.createElement('div');
+  av.className = 'av ' + role;
+  av.textContent = role === 'ai' ? 'v7' : 'You';
+  const bbl = document.createElement('div');
+  bbl.className = 'bbl';
+  bbl.innerHTML = html;
+  div.appendChild(av);
+  div.appendChild(bbl);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return bbl;
 }
 
-const C = { a:'#38bdf8', g:'#34d399', gold:'#f59e0b', r:'#f87171', m:'#64a0c0', grid:'rgba(56,189,248,0.08)' };
-const baseO = {
-  responsive:true, maintainAspectRatio:false,
-  plugins:{ legend:{ labels:{ color:C.m, font:{ family:'DM Mono', size:11 }, boxWidth:12 } } },
-  scales:{
-    x:{ ticks:{ color:C.m, font:{ family:'DM Mono', size:10 } }, grid:{ color:C.grid } },
-    y:{ ticks:{ color:C.m, font:{ family:'DM Mono', size:10 } }, grid:{ color:C.grid } }
-  }
-};
-
-// ── SHIP DATA ─────────────────────────────────────────────────────────────
-// Each ship: name, route, supply benchmark, dest benchmark, openRatio, basePnl, vol_supply, vol_dest, corrKey
-const SHIPS = [
-  { n:'GasLog Italy',       route:'US→EU',   sup:'HH',    dst:'TTF', openR:0.15, basePnl:2.53,  vs:0.45, vd:0.35, ck:'hh-ttf'   },
-  { n:'Kalymnos',           route:'NGA→Asia', sup:'Brent', dst:'JKM', openR:0.55, basePnl:9.31,  vs:0.28, vd:0.30, ck:'brent-jkm'},
-  { n:'Kastelorizo',        route:'NGA→EU',  sup:'Brent', dst:'TTF', openR:0.20, basePnl:2.95,  vs:0.28, vd:0.35, ck:'brent-ttf'},
-  { n:'Achilles',           route:'AUS→Asia', sup:'Brent', dst:'JKM', openR:0.10, basePnl:0.99,  vs:0.28, vd:0.30, ck:'brent-jkm'},
-  { n:'Delphi',             route:'NGA→EU',  sup:'Brent', dst:'TTF', openR:0.60, basePnl:8.16,  vs:0.28, vd:0.35, ck:'brent-ttf'},
-  { n:'Galicia',            route:'US→EU',   sup:'HH',    dst:'TTF', openR:0.50, basePnl:7.86,  vs:0.45, vd:0.35, ck:'hh-ttf'   },
-];
-
-// Baseline spread vol (denominator) — computed at default correlations
-// spreadVol = sqrt(vs² + vd² - 2ρ·vs·vd)
-function spreadVol(vs, vd, rho) {
-  return Math.sqrt(vs*vs + vd*vd - 2*rho*vs*vd);
+function addTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.id = 'typing-msg';
+  const av = document.createElement('div');
+  av.className = 'av ai';
+  av.textContent = 'v7';
+  const bbl = document.createElement('div');
+  bbl.className = 'bbl';
+  bbl.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  div.appendChild(av);
+  div.appendChild(bbl);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
-const DEFAULT_CORR = { 'ttf-jkm':0.70, 'hh-ttf':0.25, 'hh-jkm':0.20, 'brent-ttf':0.40, 'brent-jkm':0.35, 'freight-gas':0.32 };
-
-function getCorr() {
-  return {
-    'ttf-jkm':   document.getElementById('c-ttf-jkm').value / 100,
-    'hh-ttf':    document.getElementById('c-hh-ttf').value / 100,
-    'hh-jkm':    document.getElementById('c-hh-jkm').value / 100,
-    'brent-ttf': document.getElementById('c-brent-ttf').value / 100,
-    'brent-jkm': document.getElementById('c-brent-jkm').value / 100,
-    'freight-gas':document.getElementById('c-freight-gas').value / 100,
-  };
+function removeTyping() {
+  const t = document.getElementById('typing-msg');
+  if (t) t.remove();
 }
 
-function setSliders(vals) {
-  Object.entries(vals).forEach(([k,v]) => {
-    document.getElementById('c-'+k).value = Math.round(v*100);
-    document.getElementById('v-'+k).textContent = v.toFixed(2);
-  });
+function formatResponse(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(25,118,210,0.1);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
+    .replace(/\[v7 FIX (\d)\]/g, '<span class="up">v7 FIX $1</span>')
+    .replace(/\[FIX (\d)\]/g, '<span class="up">FIX $1</span>')
+    .replace(/\n/g, '<br>');
 }
 
-function resetCorr() { setSliders(DEFAULT_CORR); updateCorr(); }
-function stressCorr(s) {
-  if (s === 'decouple') setSliders({'ttf-jkm':0.70,'hh-ttf':-0.05,'hh-jkm':-0.10,'brent-ttf':0.40,'brent-jkm':0.35,'freight-gas':0.45});
-  if (s === 'high')     setSliders({'ttf-jkm':0.92,'hh-ttf':0.60,'hh-jkm':0.55,'brent-ttf':0.72,'brent-jkm':0.68,'freight-gas':0.15});
-  updateCorr();
-}
-
-let corrChart = null;
-let corrMatrixChart = null;
-
-function updateCorr() {
-  // update slider labels
-  ['ttf-jkm','hh-ttf','hh-jkm','brent-ttf','brent-jkm','freight-gas'].forEach(k => {
-    const v = document.getElementById('c-'+k).value / 100;
-    document.getElementById('v-'+k).textContent = v.toFixed(2);
-  });
-
-  const corr = getCorr();
-  const freightVol = 0.35;
-  const freightRho = corr['freight-gas'];
-
-  // compute adjusted open P&L per ship
-  const results = SHIPS.map(s => {
-    const rhoBase = DEFAULT_CORR[s.ck];
-    const rhoCurr = corr[s.ck];
-    const svBase = spreadVol(s.vs, s.vd, rhoBase);
-    const svCurr = spreadVol(s.vs, s.vd, rhoCurr);
-    // freight adds unhedged vol — correlated with dest
-    const freightAdj = s.vd * freightVol * (1 - freightRho);
-    const svCurrFrt = Math.sqrt(svCurr*svCurr + freightAdj*freightAdj);
-    const svBaseFrt = Math.sqrt(svBase*svBase + freightAdj*freightAdj);
-    const ratio = svBaseFrt > 0 ? svCurrFrt / svBaseFrt : 1;
-    const adjPnl = +(s.basePnl * ratio).toFixed(2);
-    const delta = +(adjPnl - s.basePnl).toFixed(2);
-    return { ...s, rho: rhoCurr, svBase, svCurr: svCurrFrt, ratio, adjPnl, delta };
-  });
-
-  // render table
-  const tbody = document.getElementById('corrTableBody');
-  tbody.innerHTML = '';
-  results.forEach(r => {
-    const dClass = r.delta > 0.05 ? 'red' : r.delta < -0.05 ? 'green' : 'muted';
-    const dSign  = r.delta > 0 ? '+' : '';
-    tbody.innerHTML += `<tr>
-      <td class="muted">${SHIPS.indexOf(r)+1}</td>
-      <td class="blue">${r.n}</td>
-      <td>${r.route}</td>
-      <td>${r.sup}</td>
-      <td>${r.dst}</td>
-      <td class="num">${r.rho.toFixed(2)}</td>
-      <td class="num muted">${(r.vs*100).toFixed(0)}%</td>
-      <td class="num muted">${(r.vd*100).toFixed(0)}%</td>
-      <td class="num ${r.svCurr > r.svBase*1.05 ? 'red' : r.svCurr < r.svBase*0.95 ? 'green' : ''}">${(r.svCurr*100).toFixed(1)}%</td>
-      <td class="num muted">$${r.basePnl.toFixed(2)}M</td>
-      <td class="num ${r.adjPnl > r.basePnl*1.05 ? 'red' : r.adjPnl < r.basePnl*0.95 ? 'green' : 'gold'}">$${r.adjPnl.toFixed(2)}M</td>
-      <td class="num ${dClass}">${dSign}$${Math.abs(r.delta).toFixed(2)}M</td>
-    </tr>`;
-  });
-
-  // total open
-  const totalBase = results.reduce((a,r)=>a+r.basePnl,0);
-  const totalAdj  = results.reduce((a,r)=>a+r.adjPnl,0);
-  const totalDelta = +(totalAdj - totalBase).toFixed(2);
-  const dSign = totalDelta >= 0 ? '+' : '';
-  tbody.innerHTML += `<tr style="border-top:1px solid var(--border2);font-weight:600">
-    <td colspan="9" style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px">Total open exposure</td>
-    <td class="num">$${totalBase.toFixed(2)}M</td>
-    <td class="num ${totalDelta>0.1?'red':totalDelta<-0.1?'green':'gold'}">$${totalAdj.toFixed(2)}M</td>
-    <td class="num ${totalDelta>0.1?'red':totalDelta<-0.1?'green':'muted'}">${dSign}$${Math.abs(totalDelta).toFixed(2)}M</td>
-  </tr>`;
-
-  document.getElementById('corrFootnote').innerHTML =
-    `Spread vol = √(σ²_supply + σ²_dest − 2ρ·σ_supply·σ_dest) + unhedged freight component (σ_freight=${(freightVol*100).toFixed(0)}%, ρ_frt-gas=${freightRho.toFixed(2)}). ` +
-    `Adjusted open P&L scales base open by (current spread vol / baseline spread vol). Base correlations from v6 notebook.`;
-
-  // note
-  const bigMover = results.reduce((a,b)=>Math.abs(b.delta)>Math.abs(a.delta)?b:a);
-  document.getElementById('corrNote').innerHTML =
-    `<strong>Largest mover:</strong> ${bigMover.n} (${bigMover.route}) — open P&L moves from $${bigMover.basePnl}M to <strong>$${bigMover.adjPnl}M</strong> (${bigMover.delta>=0?'+':''}$${bigMover.delta}M) under current correlations. ` +
-    `Total portfolio open: $${totalBase.toFixed(2)}M → <strong>$${totalAdj.toFixed(2)}M</strong>. ` +
-    (Math.abs(corr['hh-ttf']) < 0.10 ? '<span style="color:var(--red)"> HH–TTF near zero — US-origin ships face maximum spread risk.</span>' :
-     corr['hh-ttf'] > 0.55 ? '<span style="color:var(--green)"> High HH–TTF correlation compresses spread risk on Ships 1 &amp; 6.</span>' : '');
-
-  // update bar chart
-  const labels = results.map(r => r.n);
-  const baseVals = results.map(r => r.basePnl);
-  const adjVals  = results.map(r => r.adjPnl);
-
-  if (corrChart) {
-    corrChart.data.datasets[0].data = baseVals;
-    corrChart.data.datasets[1].data = adjVals;
-    corrChart.update();
-  } else {
-    corrChart = new Chart(document.getElementById('cCorrOpen'), {
-      type:'bar',
-      data:{ labels, datasets:[
-        { label:'Base open $M', data:baseVals, backgroundColor:'rgba(245,158,11,.5)', borderRadius:4 },
-        { label:'Adj. open $M', data:adjVals,  backgroundColor:'rgba(248,113,113,.6)', borderRadius:4 }
-      ]},
-      options:{ ...baseO }
+async function callAPI(userText) {
+  history.push({ role: 'user', content: userText });
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM,
+        messages: history.slice(-12)
+      })
     });
-  }
-
-  // correlation matrix heatmap
-  const labels5 = ['Brent','HH','TTF','JKM','Freight'];
-  const matData = [
-    [1.00, 0.15,              corr['brent-ttf'], corr['brent-jkm'], freightRho],
-    [0.15, 1.00,              corr['hh-ttf'],    corr['hh-jkm'],    freightRho*0.5],
-    [corr['brent-ttf'], corr['hh-ttf'],  1.00,  corr['ttf-jkm'],   freightRho],
-    [corr['brent-jkm'], corr['hh-jkm'], corr['ttf-jkm'], 1.00,    freightRho],
-    [freightRho, freightRho*0.5, freightRho, freightRho, 1.00]
-  ];
-
-  // flatten to scatter-style dataset
-  const heatDatasets = [];
-  const n = 5;
-  const cellColors = [];
-  const cellData = [];
-  const cellLabels = [];
-  for (let i=0;i<n;i++) for(let j=0;j<n;j++) {
-    const v = matData[i][j];
-    const alpha = Math.abs(v)*0.85+0.05;
-    const col = v >= 0 ? `rgba(56,189,248,${alpha})` : `rgba(248,113,113,${alpha})`;
-    cellData.push({ x:j, y:n-1-i, v, col });
-  }
-
-  if (corrMatrixChart) {
-    corrMatrixChart.data.datasets[0].data = cellData.map(d=>({x:d.x,y:d.y,v:d.v}));
-    corrMatrixChart.data.datasets[0].backgroundColor = cellData.map(d=>d.col);
-    corrMatrixChart.update();
-  } else {
-    corrMatrixChart = new Chart(document.getElementById('cCorrMatrix'), {
-      type: 'bubble',
-      data: {
-        datasets:[{
-          data: cellData.map(d=>({x:d.x, y:d.y, r:18, v:d.v})),
-          backgroundColor: cellData.map(d=>d.col),
-          borderColor: 'transparent',
-        }]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{
-          legend:{display:false},
-          tooltip:{
-            callbacks:{
-              label: ctx => {
-                const d = cellData[ctx.dataIndex];
-                const row = labels5[n-1-Math.round(ctx.parsed.y)];
-                const col = labels5[Math.round(ctx.parsed.x)];
-                return `${row} / ${col}: ${d.v.toFixed(2)}`;
-              }
-            }
-          }
-        },
-        scales:{
-          x:{ min:-0.5, max:4.5, ticks:{ callback:v=>labels5[Math.round(v)]||'', color:C.m, font:{family:'DM Mono',size:10} }, grid:{color:C.grid} },
-          y:{ min:-0.5, max:4.5, ticks:{ callback:v=>labels5[n-1-Math.round(v)]||'', color:C.m, font:{family:'DM Mono',size:10} }, grid:{color:C.grid} }
-        }
-      }
-    });
+    const data = await resp.json();
+    const text = data.content.map(c => c.text || '').join('');
+    history.push({ role: 'assistant', content: text });
+    return text;
+  } catch (e) {
+    return 'API error: ' + e.message;
   }
 }
 
-
-let done = false;
-function initCharts() {
-  if (done) return; done = true;
-
-  const ships = ['GasLog\nItaly','Kalymnos','Kastelrizo','Achilles','Delphi','Galicia'];
-
-  new Chart(document.getElementById('cPnl'),{type:'bar',data:{labels:ships,datasets:[
-    {label:'Locked $M',data:[14.34,7.62,11.81,8.87,5.44,7.86],backgroundColor:'rgba(56,189,248,.7)',borderRadius:4},
-    {label:'Open $M',  data:[2.53,9.31,2.95,0.99,8.16,7.86],  backgroundColor:'rgba(245,158,11,.6)', borderRadius:4}
-  ]},options:{...baseO,scales:{x:{...baseO.scales.x,stacked:true},y:{...baseO.scales.y,stacked:true}}}});
-
-  new Chart(document.getElementById('cMarginDay'),{type:'bar',data:{labels:['NGA→EU','US→EU','NGA→AS','AUS→AS','US→AS','AUS→EU'],datasets:[{label:'DES $/day',data:[0.2484,0.1826,0.1443,0.1358,0.1167,-0.0047],backgroundColor:[C.g,C.a,'rgba(56,189,248,.5)','rgba(56,189,248,.4)','rgba(56,189,248,.3)',C.r],borderRadius:4}]},options:{...baseO,plugins:{legend:{display:false}}}});
-
-  new Chart(document.getElementById('cCosts'),{type:'bar',data:{labels:['NGA→EU','US→EU','NGA→AS','AUS→AS','US→AS','AUS→EU'],datasets:[
-    {label:'Freight',   data:[0.55,0.95,1.00,0.45,1.35,1.55],backgroundColor:'rgba(56,189,248,.7)',borderRadius:2},
-    {label:'Boil-off',  data:[0.108,0.168,0.228,0.132,0.312,0.360],backgroundColor:'rgba(245,158,11,.7)',borderRadius:2},
-    {label:'Port+Canal',data:[0.16,0.22,0.28,0.14,0.42,0.38],backgroundColor:'rgba(148,163,184,.5)',borderRadius:2}
-  ]},options:{...baseO,scales:{x:{...baseO.scales.x,stacked:true},y:{...baseO.scales.y,stacked:true}}}});
-
-  new Chart(document.getElementById('cOpt'),{type:'bar',data:{labels:ships,datasets:[
-    {label:'Base $/day',    data:[0.183,0.135,0.248,0.136,0.229,0.170],backgroundColor:'rgba(56,189,248,.5)',borderRadius:3},
-    {label:'Adj w/ option', data:[0.183,0.143,0.248,0.136,0.248,0.177],backgroundColor:'rgba(52,211,153,.7)', borderRadius:3}
-  ]},options:{...baseO}});
-
-  new Chart(document.getElementById('cHedge'),{type:'bar',data:{labels:ships,datasets:[
-    {label:'Locked $M',data:[14.34,7.62,11.81,8.87,5.44,7.86],backgroundColor:'rgba(56,189,248,.7)',borderRadius:4},
-    {label:'Open $M',  data:[2.53,9.31,2.95,0.99,8.16,7.86],  backgroundColor:'rgba(245,158,11,.6)', borderRadius:4}
-  ]},options:{...baseO,scales:{x:{...baseO.scales.x,stacked:true},y:{...baseO.scales.y,stacked:true}}}});
-
-  // Scenario distribution (approximated normals)
-  const bins=[],fv=[],tv=[];
-  for(let v=50;v<=135;v+=3){
-    bins.push('$'+v+'M');
-    fv.push(+Math.exp(-.5*Math.pow((v-88.04)/14.16,2)).toFixed(4));
-    tv.push(+Math.exp(-.5*Math.pow((v-93.25)/14.96,2)).toFixed(4));
-  }
-  new Chart(document.getElementById('cScen'),{type:'line',data:{labels:bins,datasets:[
-    {label:'Fixed routes',data:fv,borderColor:C.a,backgroundColor:'rgba(56,189,248,.1)',fill:true,tension:.4,pointRadius:0},
-    {label:'Two-stage',   data:tv,borderColor:C.g,backgroundColor:'rgba(52,211,153,.1)', fill:true,tension:.4,pointRadius:0}
-  ]},options:{...baseO,scales:{x:{...baseO.scales.x,ticks:{maxTicksLimit:8,color:C.m,font:{family:'DM Mono',size:10}}},y:{display:false}}}});
-
-  // Sweep data
-  const sd=[[0.00,0.70,0.30,88.17,59.09,53.34,20.17],[0.05,0.72,0.32,88.16,59.95,54.38,19.56],[0.10,0.73,0.33,88.15,60.81,55.42,18.96],[0.15,0.74,0.34,88.13,61.67,56.45,18.35],[0.20,0.76,0.36,88.12,62.53,57.49,17.75],[0.25,0.77,0.38,88.11,63.39,58.52,17.14],[0.30,0.79,0.39,88.10,64.25,59.56,16.54],[0.35,0.80,0.40,88.08,65.10,60.59,15.93],[0.40,0.82,0.42,88.07,65.96,61.63,15.33],[0.45,0.84,0.44,88.06,66.81,62.66,14.72],[0.50,0.85,0.45,88.04,67.67,63.70,14.12],[0.55,0.86,0.46,88.03,68.52,64.73,13.51],[0.60,0.88,0.48,88.02,69.38,65.77,12.91],[0.65,0.90,0.50,88.00,70.23,66.81,12.30],[0.70,0.91,0.51,87.99,71.08,67.84,11.69],[0.75,0.92,0.52,87.98,71.94,68.88,11.09],[0.80,0.94,0.54,87.96,72.81,69.91,10.48],[0.85,0.96,0.55,87.95,73.68,70.95,9.88],[0.90,0.97,0.57,87.94,74.53,71.98,9.27],[0.95,0.99,0.58,87.92,75.38,73.02,8.67],[1.00,1.00,0.60,87.91,76.24,74.05,8.06]];
-
-  const tb=document.getElementById('sweepBody');
-  sd.forEach(r=>{
-    const tr=document.createElement('tr');
-    if(Math.abs(r[0]-.5)<.01) tr.classList.add('sweep-hl');
-    tr.innerHTML=`<td class="num">${r[0].toFixed(2)}</td><td class="num">${(r[1]*100).toFixed(0)}%</td><td class="num">${(r[2]*100).toFixed(0)}%</td><td class="num">${r[3].toFixed(2)}</td><td class="num">${r[4].toFixed(2)}</td><td class="num">${r[5].toFixed(2)}</td><td class="num">${r[6].toFixed(2)}</td>`;
-    tb.appendChild(tr);
-  });
-
-  const sl=sd.map(r=>(r[1]*100).toFixed(0)+'%');
-  new Chart(document.getElementById('cSweep'),{type:'line',data:{labels:sl,datasets:[
-    {label:'E[P&L] $M',data:sd.map(r=>r[3]),borderColor:C.a,tension:.3,pointRadius:2},
-    {label:'CVaR $M',  data:sd.map(r=>r[5]),borderColor:C.g,tension:.3,pointRadius:2},
-    {label:'P5 $M',    data:sd.map(r=>r[4]),borderColor:C.gold,tension:.3,pointRadius:2,borderDash:[4,2]}
-  ]},options:{...baseO}});
-
-  new Chart(document.getElementById('cVol'),{type:'line',data:{labels:sl,datasets:[
-    {label:'Volatility (Std $M)',data:sd.map(r=>r[6]),borderColor:C.r,backgroundColor:'rgba(248,113,113,.1)',fill:true,tension:.3,pointRadius:2}
-  ]},options:{...baseO}});
+async function sendMsg() {
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  addMsg('user', text);
+  btn.disabled = true;
+  addTyping();
+  const reply = await callAPI(text);
+  removeTyping();
+  addMsg('ai', formatResponse(reply));
+  btn.disabled = false;
+  input.focus();
 }
 
-window.addEventListener('load', initCharts);
+function sendQuick(text) {
+  input.value = text;
+  sendMsg();
+}
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 90) + 'px';
+});
 </script>
 </body>
 </html>
