@@ -111,6 +111,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 
 <div class="nav">
   <div class="tab active" onclick="showTab('overview',this)">Overview</div>
+  <div class="tab" onclick="showTab('positions',this)">Positions</div>
   <div class="tab" onclick="showTab('routes',this)">Route Matrix</div>
   <div class="tab" onclick="showTab('fleet',this)">Ship Matrix</div>
   <div class="tab" onclick="showTab('hedge',this)">Hedge Dashboard</div>
@@ -134,19 +135,67 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 
   <div class="grid-2">
     <div class="card">
-      <div class="card-title">Fleet Composition</div>
+      <div class="card-title">Fleet Composition &amp; Cargo Status</div>
       <table class="tbl">
-        <thead><tr><th>Vessel</th><th>Capacity</th><th>Basin</th><th>Cat.</th><th>Ctr.</th></tr></thead>
+        <thead><tr><th>Vessel</th><th>Capacity</th><th>Status</th><th>Fullness</th><th>Cat.</th><th>Ctr.</th></tr></thead>
         <tbody>
-          <tr><td class="blue">GasLog Italy</td><td>174k m³</td><td>Atlantic</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td></tr>
-          <tr><td class="blue">Maran Gas Kalymnos</td><td>174k m³</td><td>Atlantic</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td></tr>
-          <tr><td class="blue">Maran Gas Kastelorizo</td><td>174k m³</td><td>Iberia</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td></tr>
-          <tr><td class="blue">Maran Gas Achilles</td><td>174k m³</td><td>Pacific</td><td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td></tr>
-          <tr><td class="blue">Maran Gas Delphi</td><td>160k m³</td><td>W.Africa</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td></tr>
-          <tr><td class="blue">Seapeak Galicia</td><td>140k m³</td><td>US Gulf</td><td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td></tr>
+          <tr>
+            <td class="blue">GasLog Italy</td><td>174k m³</td>
+            <td><span class="badge bd">Ballasting</span></td>
+            <td style="min-width:120px">
+              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:5%;background:var(--muted)"></div></div><span class="hbar-pct muted">~5%</span></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Heel only · en route US Gulf to reload</div>
+            </td>
+            <td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td>
+          </tr>
+          <tr>
+            <td class="blue">Maran Gas Kalymnos</td><td>174k m³</td>
+            <td><span class="badge bs">For Orders</span></td>
+            <td style="min-width:120px">
+              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:98%;background:var(--green)"></div></div><span class="hbar-pct green">~98%</span></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Laden · Alboran Sea · awaiting destination order</div>
+            </td>
+            <td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td>
+          </tr>
+          <tr>
+            <td class="blue">Maran Gas Kastelorizo</td><td>174k m³</td>
+            <td><span class="badge bf">Loading</span></td>
+            <td style="min-width:120px">
+              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:60%;background:var(--accent)"></div></div><span class="hbar-pct blue">~60%</span></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Loading at Destrehan LA · US cargo</div>
+            </td>
+            <td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td>
+          </tr>
+          <tr>
+            <td class="blue">Maran Gas Achilles</td><td>174k m³</td>
+            <td><span class="badge bd">Laden</span></td>
+            <td style="min-width:120px">
+              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:95%;background:var(--green)"></div></div><span class="hbar-pct green">~95%</span></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Full · Arabian Sea → Dahej India</div>
+            </td>
+            <td><span class="badge bc">Committed</span></td><td><span class="badge bd">DES</span></td>
+          </tr>
+          <tr>
+            <td class="blue">Maran Gas Delphi</td><td>160k m³</td>
+            <td><span class="badge bs">For Orders</span></td>
+            <td style="min-width:120px">
+              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:8%;background:var(--muted)"></div></div><span class="hbar-pct muted">~8%</span></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Heel only · ballasting N off Namibia · ~7d to Bonny</div>
+            </td>
+            <td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td>
+          </tr>
+          <tr>
+            <td class="blue">Seapeak Galicia</td><td>140k m³</td>
+            <td><span class="badge bs">For Orders</span></td>
+            <td style="min-width:120px">
+              <div class="hbar-wrap"><div class="hbar-bg"><div class="hbar-fill" style="width:8%;background:var(--muted)"></div></div><span class="hbar-pct muted">~8%</span></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Heel only · slow steaming 9.2kn · W. Africa</div>
+            </td>
+            <td><span class="badge bs">Swing</span></td><td><span class="badge bf">FOB</span></td>
+          </tr>
         </tbody>
       </table>
-      <div class="fn">Total capacity 996k m³ · 3 DES committed · 3 FOB swing</div>
+      <div class="fn">Fullness estimates from latest AIS data (March 2026) · Heel ≈ boil-off retention only · Total capacity 996k m³ · 3 DES committed · 3 FOB swing</div>
     </div>
     <div class="card">
       <div class="card-title">Locked vs Open P&amp;L per Vessel</div>
@@ -441,6 +490,172 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
   </div>
 
   <div class="note"><strong>Bottom line (v6):</strong> Two-stage optimisation adds +$5.21M in expected value by preserving swing-ship optionality across Kalymnos, Delphi, and Galicia. The most valuable assets in this fleet are not the ships with the highest static margin, but those that can respond when TTF–JKM and Brent–HH relationships shift. Reward optionality explicitly — not as a residual.</div>
+</div>
+
+<!-- POSITIONS -->
+<div class="section" id="tab-positions">
+  <div class="sec-title">Portfolio Positions — Primary (Locked) &amp; Secondary (Open)</div>
+
+  <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi green"><div class="kpi-label">Total Locked P&L</div><div class="kpi-value">$55.94M</div><div class="kpi-sub">Primary · hedged spread</div></div>
+    <div class="kpi gold"><div class="kpi-label">Total Open P&L</div><div class="kpi-value">$31.80M</div><div class="kpi-sub">Secondary · unhedged</div></div>
+    <div class="kpi"><div class="kpi-label">DES avg hedge</div><div class="kpi-value">85%</div><div class="kpi-sub">Ships 1, 3, 4 — committed</div></div>
+    <div class="kpi gold"><div class="kpi-label">FOB avg hedge</div><div class="kpi-value">45%</div><div class="kpi-sub">Ships 2, 5, 6 — swing</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Primary Position — Locked Spread (hedged portion of each ship)</div>
+    <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Ship</th><th>Vessel</th><th>Route</th>
+          <th>Supply hedge</th><th>Supply rate</th>
+          <th>Dest. hedge</th><th>Dest. rate</th>
+          <th>Hedge ratio</th><th>Locked P&amp;L</th><th>Locked spread</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="muted">1</td><td class="blue">GasLog Italy</td>
+          <td>US <span class="ra">→</span> Europe</td>
+          <td><span class="badge bf">HH</span></td><td class="num">$2.40</td>
+          <td><span class="badge bf">TTF</span></td><td class="num">$11.50</td>
+          <td class="num">85%</td>
+          <td class="num green">$14.34M</td>
+          <td class="num green">TTF − (HH + $3.00) − cost = <strong>$5.11</strong></td>
+        </tr>
+        <tr>
+          <td class="muted">2</td><td class="blue">Maran Gas Kalymnos</td>
+          <td>Nigeria <span class="ra">→</span> Asia*</td>
+          <td><span class="badge bs">Brent</span></td><td class="num">$82.0/bbl</td>
+          <td><span class="badge bs">JKM</span></td><td class="num">$13.20</td>
+          <td class="num gold">45%</td>
+          <td class="num green">$7.62M</td>
+          <td class="num green">JKM − (0.08×Brent) − cost = <strong>$5.13</strong></td>
+        </tr>
+        <tr>
+          <td class="muted">3</td><td class="blue">Maran Gas Kastelorizo</td>
+          <td>Nigeria <span class="ra">→</span> Europe</td>
+          <td><span class="badge bs">Brent</span></td><td class="num">$82.0/bbl</td>
+          <td><span class="badge bf">TTF</span></td><td class="num">$11.50</td>
+          <td class="num">80%</td>
+          <td class="num green">$11.81M</td>
+          <td class="num green">TTF − (0.08×Brent) − cost = <strong>$4.47</strong></td>
+        </tr>
+        <tr>
+          <td class="muted">4</td><td class="blue">Maran Gas Achilles</td>
+          <td>Australia <span class="ra">→</span> Asia</td>
+          <td><span class="badge bs">Brent</span></td><td class="num">$82.0/bbl</td>
+          <td><span class="badge bs">JKM</span></td><td class="num">$13.20</td>
+          <td class="num">90%</td>
+          <td class="num green">$8.87M</td>
+          <td class="num green">JKM − (0.12×Brent) − cost = <strong>$2.99</strong></td>
+        </tr>
+        <tr>
+          <td class="muted">5</td><td class="blue">Maran Gas Delphi</td>
+          <td>Nigeria <span class="ra">→</span> Europe*</td>
+          <td><span class="badge bs">Brent</span></td><td class="num">$82.0/bbl</td>
+          <td><span class="badge bf">TTF</span></td><td class="num">$11.50</td>
+          <td class="num gold">40%</td>
+          <td class="num green">$5.44M</td>
+          <td class="num green">TTF − (0.08×Brent) − cost = <strong>$4.47</strong></td>
+        </tr>
+        <tr>
+          <td class="muted">6</td><td class="blue">Seapeak Galicia</td>
+          <td>US <span class="ra">→</span> Europe*</td>
+          <td><span class="badge bf">HH</span></td><td class="num">$2.40</td>
+          <td><span class="badge bf">TTF</span></td><td class="num">$11.50</td>
+          <td class="num gold">50%</td>
+          <td class="num green">$7.86M</td>
+          <td class="num green">TTF − (HH + $3.00) − cost = <strong>$4.76</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="fn">* Swing ships: default destination shown. Locked spread = DES margin at time-zero benchmark prices × hedge ratio × 3.3M MMBtu cargo size. Supply hedged via futures on HH (US origin) or Brent (NGA/AUS origin). Destination hedged via TTF (Europe) or JKM (Asia) forward.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Secondary Position — Open P&amp;L (unhedged portion, exposed to price moves)</div>
+    <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Ship</th><th>Vessel</th><th>Cat.</th>
+          <th>Open ratio</th><th>Open P&amp;L</th>
+          <th>Supply exposure</th><th>Dest. exposure</th>
+          <th>Alt. destination</th><th>Alt. margin</th><th>Switch trigger</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="muted">1</td><td class="blue">GasLog Italy</td>
+          <td><span class="badge bc">Committed</span></td>
+          <td class="num">15%</td><td class="num gold">$2.53M</td>
+          <td>HH (long)</td><td>TTF (short)</td>
+          <td class="muted">Asia ($6.07) — DES locked, no switch</td>
+          <td class="num muted">6.068</td>
+          <td class="muted red">No switch — DES contract</td>
+        </tr>
+        <tr>
+          <td class="muted">2</td><td class="blue">Maran Gas Kalymnos</td>
+          <td><span class="badge bs">Swing</span></td>
+          <td class="num gold">55%</td><td class="num gold">$9.31M</td>
+          <td>Brent (long)</td><td>JKM (short)</td>
+          <td class="green">Europe ($4.47) — FOB can switch</td>
+          <td class="num">4.472</td>
+          <td class="num green">Switch if JKM − TTF &lt; $1.01</td>
+        </tr>
+        <tr>
+          <td class="muted">3</td><td class="blue">Maran Gas Kastelorizo</td>
+          <td><span class="badge bc">Committed</span></td>
+          <td class="num">20%</td><td class="num gold">$2.95M</td>
+          <td>Brent (long)</td><td>TTF (short)</td>
+          <td class="muted">Asia ($5.48) — DES locked, no switch</td>
+          <td class="num muted">5.482</td>
+          <td class="muted red">No switch — DES contract</td>
+        </tr>
+        <tr>
+          <td class="muted">4</td><td class="blue">Maran Gas Achilles</td>
+          <td><span class="badge bc">Committed</span></td>
+          <td class="num">10%</td><td class="num gold">$0.99M</td>
+          <td>Brent (long)</td><td>JKM (short)</td>
+          <td class="muted">Europe (−$0.28) — DES locked, no switch</td>
+          <td class="num muted red">−0.280</td>
+          <td class="muted red">No switch — DES contract</td>
+        </tr>
+        <tr>
+          <td class="muted">5</td><td class="blue">Maran Gas Delphi</td>
+          <td><span class="badge bs">Swing</span></td>
+          <td class="num gold">60%</td><td class="num gold">$8.16M</td>
+          <td>Brent (long)</td><td>TTF (short)</td>
+          <td class="green">Asia ($5.13) — FOB can switch</td>
+          <td class="num green">5.132</td>
+          <td class="num green">Switch if JKM − TTF &gt; $1.01</td>
+        </tr>
+        <tr>
+          <td class="muted">6</td><td class="blue">Seapeak Galicia</td>
+          <td><span class="badge bs">Swing</span></td>
+          <td class="num gold">50%</td><td class="num gold">$7.86M</td>
+          <td>HH (long)</td><td>TTF (short)</td>
+          <td class="green">Asia ($5.72) — FOB can switch</td>
+          <td class="num green">5.718</td>
+          <td class="num green">Switch if JKM − TTF &gt; $0.96</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="fn">
+      Open P&amp;L = base margin × (1 − hedge ratio) × 3.3M MMBtu cargo. "Long supply" = exposed to rising FOB cost (Brent or HH). "Short destination" = exposed to falling DES price (TTF or JKM).<br>
+      Switch trigger = the JKM−TTF spread at which the alternative destination becomes more profitable than the default. Current JKM−TTF = $1.70/MMBtu. Ships 2, 5, 6 are all at or near their trigger thresholds.<br>
+      <strong style="color:var(--red)">Freight unhedged on all 6 vessels</strong> — OU σ=0.35 contributes ~8–15% of P&amp;L variance as additional secondary exposure.
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Reading the positions:</strong> The primary (locked) position captures the spread at time-zero benchmark prices and is protected from outright moves by the hedge. The secondary (open) position is where the portfolio makes or loses money as prices evolve — and for swing ships, where the two-stage re-routing generates the +$5.21M uplift. The switch triggers for Ships 2, 5, 6 are the key numbers to watch daily: current JKM−TTF of $1.70 sits above Ship 2's trigger ($1.01) and Ship 6's trigger ($0.96), meaning Asia is currently the better default — but the margin is thin for Ship 6.
+  </div>
 </div>
 
 </div><!-- /content -->
