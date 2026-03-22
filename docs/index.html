@@ -3,310 +3,1140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENI LNG Fleet Optimizer v7</title>
+<title>C1 LNG Fleet Optimizer v7</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{--n0:#0b1320;--n1:#101b2e;--n2:#152440;--n3:#1a2d50;--a1:#1976d2;--a2:#42a5f5;--t1:#00897b;--t2:#4db6ac;--g1:#c59a2e;--r1:#e53935;--tx:#c0d4e8;--tx2:#7e99b4;--bdr:rgba(25,118,210,0.15)}
+:root{--bg:#080e1a;--n0:#0b1320;--n1:#101b2e;--n2:#152440;--n3:#1a2d50;--a1:#1976d2;--a2:#42a5f5;--t1:#00897b;--t2:#4db6ac;--g1:#c59a2e;--r1:#e53935;--r2:#ef5350;--tx:#c0d4e8;--tx2:#7e99b4;--bdr:rgba(25,118,210,0.15)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#080e1a;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:16px;font-family:'Courier New',monospace}
-#w{background:var(--n0);color:var(--tx);display:flex;flex-direction:column;height:92vh;max-height:800px;width:100%;max-width:860px;border-radius:12px;overflow:hidden;border:1px solid var(--bdr)}
-#hd{background:var(--n1);border-bottom:1px solid var(--bdr);padding:14px 20px;display:flex;align-items:center;gap:12px}
-#hd .lg{width:36px;height:36px;background:var(--a1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
-#hd h1{font-size:13px;font-weight:700;color:#e0eaf5;letter-spacing:1.2px;text-transform:uppercase}
-#hd p{font-size:10px;color:var(--tx2);margin-top:2px}
-#pills{display:flex;gap:0;border-bottom:1px solid var(--bdr);background:rgba(10,19,32,0.9);overflow-x:auto;scrollbar-width:none}
-#pills::-webkit-scrollbar{display:none}
-.pl{padding:7px 12px;font-size:9.5px;color:var(--tx2);border-right:1px solid var(--bdr);white-space:nowrap;display:flex;align-items:center;gap:5px}
-.pl .n{width:15px;height:15px;border-radius:50%;background:var(--a1);font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
-.pl.up .n{background:var(--t1)}
-#sb{display:flex;gap:14px;padding:7px 20px;background:rgba(10,19,32,0.6);border-bottom:1px solid var(--bdr);overflow-x:auto;scrollbar-width:none;font-size:10px}
-#sb::-webkit-scrollbar{display:none}
-.sp{display:flex;align-items:center;gap:5px;white-space:nowrap;color:var(--tx2)}
-.sp .d{width:6px;height:6px;border-radius:50%;background:var(--t1)}
-.sp .d.am{background:var(--g1)}
-.sp .d.rd{background:var(--r1)}
-.sp strong{color:var(--tx);font-weight:600}
-#msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin}
-.msg{display:flex;gap:10px;max-width:92%}
-.msg.ai{align-self:flex-start}
-.msg.user{align-self:flex-end;flex-direction:row-reverse}
-.av{width:28px;height:28px;border-radius:7px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.av.ai{background:var(--a1);color:#fff}
-.av.user{background:var(--t1);color:#fff}
-.bbl{background:var(--n2);border:1px solid var(--bdr);border-radius:8px;padding:11px 14px;font-size:12.5px;line-height:1.6}
-.msg.user .bbl{background:rgba(0,137,123,0.1);border-color:rgba(0,137,123,0.2)}
-.tg{display:inline-block;background:rgba(25,118,210,0.12);color:var(--a2);padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;margin:0 2px}
-.up{color:var(--t2);font-weight:600;font-size:10px;display:inline-block;background:rgba(0,137,123,0.1);padding:1px 6px;border-radius:3px;margin:0 2px}
-.typing{display:flex;gap:4px;align-items:center;padding:6px}
-.typing span{width:5px;height:5px;border-radius:50%;background:var(--a2);opacity:0.4;animation:pulse 1.4s infinite}
-.typing span:nth-child(2){animation-delay:0.2s}
-.typing span:nth-child(3){animation-delay:0.4s}
-@keyframes pulse{0%,80%,100%{opacity:0.4;transform:scale(1)}40%{opacity:1;transform:scale(1.2)}}
-#qp{display:flex;gap:7px;padding:10px 20px;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--bdr)}
-#qp::-webkit-scrollbar{display:none}
-.qb{background:var(--n2);border:1px solid var(--bdr);border-radius:7px;padding:7px 12px;font-size:10.5px;color:var(--tx);cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s}
-.qb:hover{border-color:var(--a1);color:var(--a2);background:rgba(25,118,210,0.06)}
-#ir{display:flex;gap:10px;padding:12px 20px;border-top:1px solid var(--bdr);background:var(--n1)}
-#ui{flex:1;background:var(--n2);border:1px solid var(--bdr);border-radius:7px;color:var(--tx);font-family:inherit;font-size:12.5px;padding:9px 12px;resize:none;outline:none;min-height:38px;max-height:90px;scrollbar-width:thin}
-#ui::placeholder{color:var(--tx2)}
-#ui:focus{border-color:var(--a1)}
-#sb2{background:var(--a1);border:none;border-radius:7px;color:#fff;cursor:pointer;padding:9px 16px;font-size:12px;font-family:inherit;font-weight:600;transition:background 0.15s;height:38px;align-self:flex-end}
-#sb2:hover{background:var(--a2)}
-#sb2:disabled{opacity:0.5;cursor:not-allowed}
-.note{font-size:10px;color:var(--tx2);text-align:center;padding:4px;border-top:1px solid var(--bdr);background:var(--n1)}
+body{background:var(--bg);color:var(--tx);font-family:'Courier New',monospace;font-size:12px;min-height:100vh}
+a{color:var(--a2)}
+
+/* HEADER */
+#hdr{background:var(--n1);border-bottom:1px solid var(--bdr);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+#hdr .lg{width:34px;height:34px;background:var(--a1);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+#hdr h1{font-size:12px;font-weight:700;color:#e0eaf5;letter-spacing:1px;text-transform:uppercase}
+#hdr p{font-size:10px;color:var(--tx2);margin-top:1px}
+.v7badge{display:inline-block;background:var(--t1);color:#fff;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:6px;font-weight:700;letter-spacing:0.5px;vertical-align:middle}
+
+/* TOP KPI */
+#topkpi{display:flex;gap:0;border-bottom:1px solid var(--bdr);background:var(--n0);overflow-x:auto;scrollbar-width:none}
+#topkpi::-webkit-scrollbar{display:none}
+.tkpi{padding:8px 16px;border-right:1px solid var(--bdr);white-space:nowrap;text-align:center;min-width:100px}
+.tkpi .lbl{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:0.5px}
+.tkpi .val{font-size:14px;font-weight:700;display:block;margin-top:2px}
+.green{color:var(--t2)}.amber{color:var(--g1)}.red{color:var(--r2)}.blue{color:var(--a2)}
+
+/* BENCH STRIP */
+#bench{display:flex;gap:0;border-bottom:1px solid var(--bdr);background:rgba(10,19,32,0.7);overflow-x:auto;scrollbar-width:none;font-size:10px}
+#bench::-webkit-scrollbar{display:none}
+.bi{padding:5px 12px;border-right:1px solid var(--bdr);white-space:nowrap;display:flex;gap:6px;align-items:center}
+.bi .bn{color:var(--tx2);font-weight:600;letter-spacing:0.5px}.bi .bv{color:var(--tx)}
+
+/* TABS */
+#tabs{display:flex;gap:0;border-bottom:2px solid var(--bdr);background:var(--n1);overflow-x:auto;scrollbar-width:none;position:sticky;top:58px;z-index:99}
+#tabs::-webkit-scrollbar{display:none}
+.tab{padding:9px 14px;font-size:10.5px;color:var(--tx2);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.15s;letter-spacing:0.3px}
+.tab:hover{color:var(--tx);background:rgba(25,118,210,0.05)}
+.tab.active{color:var(--a2);border-bottom-color:var(--a1);background:rgba(25,118,210,0.08)}
+.tab.v7new{position:relative}
+.tab.v7new::after{content:"v7";position:absolute;top:2px;right:2px;font-size:7px;background:var(--t1);color:#fff;padding:0 3px;border-radius:2px}
+
+/* CONTENT */
+#content{max-width:1200px;margin:0 auto;padding:16px}
+.page{display:none}.page.active{display:block}
+.card{background:var(--n2);border:1px solid var(--bdr);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.card-title{font-size:11px;color:var(--a2);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* KPI CARDS */
+.kpi{background:var(--n3);border:1px solid var(--bdr);border-radius:6px;padding:10px 12px;text-align:center}
+.kpi .kl{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:0.5px}
+.kpi .kv{font-size:18px;font-weight:700;margin-top:3px}
+.kpi .ks{font-size:9px;color:var(--tx2);margin-top:2px}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;scrollbar-width:thin}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{background:var(--n3);color:var(--a2);padding:7px 8px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bdr);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid rgba(25,118,210,0.08);white-space:nowrap}
+.r{text-align:right}
+.c{text-align:center}
+tr:hover{background:rgba(25,118,210,0.04)}
+
+/* CHART */
+.chart-wrap{position:relative;height:260px}
+
+/* ALERTS */
+.alert{border-radius:6px;padding:10px 14px;font-size:11px;display:flex;gap:8px;align-items:flex-start;margin-bottom:12px}
+.alert-amber{background:rgba(197,154,46,0.08);border:1px solid rgba(197,154,46,0.2);color:var(--g1)}
+.alert-teal{background:rgba(0,137,123,0.08);border:1px solid rgba(0,137,123,0.2);color:var(--t2)}
+.alert-red{background:rgba(229,57,53,0.08);border:1px solid rgba(229,57,53,0.2);color:var(--r2)}
+.alert-blue{background:rgba(25,118,210,0.08);border:1px solid rgba(25,118,210,0.2);color:var(--a2)}
+.alert-icon{font-weight:700;font-size:13px;flex-shrink:0}
+.tag{display:inline-block;background:rgba(25,118,210,0.1);color:var(--a2);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600}
+.v7tag{display:inline-block;background:rgba(0,137,123,0.12);color:var(--t2);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  #content{padding:10px}
+  .card{padding:10px 12px}
+  .kpi .kv{font-size:15px}
+  #hdr h1{font-size:10px}
+}
 </style>
 </head>
 <body>
-<div id="w">
-  <div id="hd">
-    <div class="lg">E</div>
-    <div style="flex:1">
-      <h1>ENI LNG Fleet Optimizer v7</h1>
-      <p>Real-options &middot; Regime-switching &middot; Canal risk &middot; Vessel-specific costs</p>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="lg">E</div>
+  <div style="flex:1">
+    <h1>C1 LNG Fleet Optimizer<span class="v7badge">v7</span></h1>
+    <p>8 logic upgrades &middot; Real options &middot; Regime-switching &middot; Canal risk &middot; Vessel-specific costs</p>
+  </div>
+</div>
+
+<!-- TOP KPI -->
+<div id="topkpi">
+  <div class="tkpi"><span class="lbl">E[P&L]</span><span class="val green">$88.34M</span></div>
+  <div class="tkpi"><span class="lbl">2-Stage uplift</span><span class="val green">+$6.41M</span></div>
+  <div class="tkpi"><span class="lbl">CVaR</span><span class="val amber">$59.14M</span></div>
+  <div class="tkpi"><span class="lbl">Locked P&L</span><span class="val blue">$55.94M</span></div>
+  <div class="tkpi"><span class="lbl">Option value</span><span class="val green">+$2.8M</span></div>
+  <div class="tkpi"><span class="lbl">Freight hedge</span><span class="val red">GAP</span></div>
+</div>
+
+<!-- BENCH STRIP -->
+<div id="bench">
+  <div class="bi"><span class="bn">BRENT</span><span class="bv">$85.00/bbl</span></div>
+  <div class="bi"><span class="bn">HH</span><span class="bv">$2.10/MMBtu</span></div>
+  <div class="bi"><span class="bn">TTF</span><span class="bv">$11.00/MMBtu</span></div>
+  <div class="bi"><span class="bn">JKM</span><span class="bv">$13.50/MMBtu</span></div>
+  <div class="bi"><span class="bn">FOB_US</span><span class="bv">$4.92</span></div>
+  <div class="bi"><span class="bn">FOB_NGA</span><span class="bv">$6.80</span></div>
+  <div class="bi"><span class="bn">FOB_AUS</span><span class="bv">$10.20</span></div>
+  <div class="bi"><span class="bn">SCENARIOS</span><span class="bv">5,000 × 90d</span></div>
+  <div class="bi"><span class="bn">REGIME</span><span class="bv">2-state Markov</span></div>
+</div>
+
+<!-- TABS -->
+<div id="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">Overview</div>
+  <div class="tab v7new" onclick="showTab('merger',this)">Acquisition</div>
+  <div class="tab" onclick="showTab('portfolio',this)">Portfolio Effect</div>
+  <div class="tab" onclick="showTab('routes',this)">Route Matrix</div>
+  <div class="tab" onclick="showTab('fleet',this)">Fleet Matrix</div>
+  <div class="tab" onclick="showTab('hedge',this)">Hedge Dashboard</div>
+  <div class="tab v7new" onclick="showTab('options',this)">Real Options</div>
+  <div class="tab v7new" onclick="showTab('canal',this)">Canal Risk</div>
+  <div class="tab v7new" onclick="showTab('regime',this)">Regime Switch</div>
+  <div class="tab" onclick="showTab('scenarios',this)">Scenarios</div>
+  <div class="tab" onclick="showTab('twostage',this)">Two-Stage</div>
+  <div class="tab" onclick="showTab('actions',this)">Action List</div>
+</div>
+
+<div id="content">
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- OVERVIEW -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page active" id="page-overview">
+
+  <div class="alert alert-teal">
+    <span class="alert-icon">★</span>
+    <span><strong>v7 upgrade summary:</strong> 8 fixes applied. E[P&L] roughly flat vs v6 ($88.34M vs $88.04M) but CVaR worsens to $59.14M (from $63.64M) because v7 captures tail risks v6 ignored — canal disruption, regime stress, demurrage. Real-options valuation adds +$2.8M to swing ship portfolio value.</span>
+  </div>
+
+  <div class="alert alert-amber">
+    <span class="alert-icon">▲</span>
+    <span>FREIGHT RISK UNHEDGED — All 6 vessels carry open freight exposure. OU process σ=0.35 contributes ~10–18% of portfolio P&L variance with canal disruption overlay.</span>
+  </div>
+
+  <div class="grid-4">
+    <div class="kpi"><div class="kl">Fleet capacity</div><div class="kv blue">996k m³</div><div class="ks">21.1M MMBtu</div></div>
+    <div class="kpi"><div class="kl">Vessels</div><div class="kv blue">6</div><div class="ks">3 DES / 3 FOB</div></div>
+    <div class="kpi"><div class="kl">Swing ships</div><div class="kv green">3</div><div class="ks">Kalymnos, Delphi, Galicia</div></div>
+    <div class="kpi"><div class="kl">v7 fixes</div><div class="kv green">8</div><div class="ks">All applied</div></div>
+  </div>
+
+  <div class="grid-2" style="margin-top:14px">
+    <div class="card">
+      <div class="card-title">v6 → v7 impact breakdown</div>
+      <div class="chart-wrap"><canvas id="chartV7Impact"></canvas></div>
     </div>
-  </div>
-  <div id="pills">
-    <div class="pl"><span class="n">1</span> Route matrix</div>
-    <div class="pl"><span class="n">2</span> Ship matrix</div>
-    <div class="pl"><span class="n">3</span> Hedge layer</div>
-    <div class="pl"><span class="n">4</span> Stochastic</div>
-    <div class="pl"><span class="n">5</span> Portfolio</div>
-    <div class="pl up"><span class="n">+</span> Canal risk</div>
-    <div class="pl up"><span class="n">+</span> Real options</div>
-    <div class="pl up"><span class="n">+</span> Regime switch</div>
-  </div>
-  <div id="sb">
-    <div class="sp"><span class="d"></span> 6 vessels <strong>active</strong></div>
-    <div class="sp"><span class="d"></span> Supply <strong>US / NGA / AUS</strong></div>
-    <div class="sp"><span class="d am"></span> Boil-off <strong>DES-linked</strong></div>
-    <div class="sp"><span class="d rd"></span> Suez <strong>stochastic</strong></div>
-  </div>
-  <div id="msgs">
-    <div class="msg ai">
-      <div class="av ai">v7</div>
-      <div class="bbl">
-        Fleet optimizer v7 loaded with <span class="up">8 logic upgrades</span> over v6:<br><br>
-        <span class="tg">FIX 1</span> Boil-off valued at destination price, not flat $12<br>
-        <span class="tg">FIX 2</span> Vessel-specific $/MMBtu (140k vs 174k capacity scaling)<br>
-        <span class="tg">FIX 3</span> Spread-option pricing for swing ship optionality (Margrabe)<br>
-        <span class="tg">FIX 4</span> Suez/Panama canal disruption as stochastic event<br>
-        <span class="tg">FIX 5</span> Regime-switching correlations (normal vs stress)<br>
-        <span class="tg">FIX 6</span> Dynamic hedge rebalancing triggers<br>
-        <span class="tg">FIX 7</span> Ballast repositioning in round-trip cycle time<br>
-        <span class="tg">FIX 8</span> Laytime/demurrage risk at congested terminals<br><br>
-        Ask anything &mdash; route economics, swing ship valuation, canal stress, hedge triggers.
+    <div class="card">
+      <div class="card-title">Fleet composition</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Vessel</th><th class="r">m³</th><th class="r">MMBtu</th><th class="c">BOR</th><th class="c">Type</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>GasLog Italy</td><td class="r">174,000</td><td class="r">3,688,800</td><td class="c">0.085%</td><td class="c"><span class="tag">DES</span></td></tr>
+            <tr><td>2</td><td>Maran Gas Kalymnos</td><td class="r">174,000</td><td class="r">3,688,800</td><td class="c">0.085%</td><td class="c"><span class="v7tag">FOB</span></td></tr>
+            <tr><td>3</td><td>Maran Gas Kastelorizo</td><td class="r">174,000</td><td class="r">3,688,800</td><td class="c">0.085%</td><td class="c"><span class="tag">DES</span></td></tr>
+            <tr><td>4</td><td>Maran Gas Achilles</td><td class="r">174,000</td><td class="r">3,688,800</td><td class="c">0.085%</td><td class="c"><span class="tag">DES</span></td></tr>
+            <tr><td>5</td><td>Maran Gas Delphi</td><td class="r">160,000</td><td class="r">3,392,000</td><td class="c">0.100%</td><td class="c"><span class="v7tag">FOB</span></td></tr>
+            <tr><td>6</td><td>Seapeak Galicia</td><td class="r">140,000</td><td class="r">2,968,000</td><td class="c">0.120%</td><td class="c"><span class="v7tag">FOB</span></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-  <div id="qp">
-    <div class="qb" onclick="sendQuick('Show how boil-off valuation changes route rankings vs the old flat $12 model')">Boil-off impact</div>
-    <div class="qb" onclick="sendQuick('Price the spread option on JKM-TTF for the 3 swing ships')">Swing ship options</div>
-    <div class="qb" onclick="sendQuick('What happens to the fleet P&L if Suez is disrupted for 30 days?')">Suez disruption</div>
-    <div class="qb" onclick="sendQuick('Show vessel-specific unit economics: Seapeak Galicia vs the 174k workhorses')">Vessel unit costs</div>
-    <div class="qb" onclick="sendQuick('Compare normal vs stress regime correlations and impact on CVaR')">Regime switch</div>
-    <div class="qb" onclick="sendQuick('What are the dynamic hedge rebalancing trigger thresholds?')">Hedge triggers</div>
-  </div>
-  <div id="ir">
-    <textarea id="ui" rows="1" placeholder="Ask about route economics, optionality, canal risk, hedge triggers..."></textarea>
-    <button id="sb2" onclick="sendMsg()">SEND</button>
-  </div>
-  <div class="note">Requires Anthropic API access &middot; Model: claude-sonnet-4 &middot; See cross-check documentation for methodology</div>
 </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PORTFOLIO EFFECT -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-portfolio">
+
+  <div class="grid-4" style="margin-bottom:14px">
+    <div class="kpi"><div class="kl">P&L uplift (2-stage)</div><div class="kv green">+$6.41M</div><div class="ks">Swing re-routing</div></div>
+    <div class="kpi"><div class="kl">Std dev reduction</div><div class="kv green">&minus;$4.74M</div><div class="ks">$21.56M &rarr; $16.82M</div></div>
+    <div class="kpi"><div class="kl">CVaR improvement</div><div class="kv green">+$7.34M</div><div class="ks">Sum $51.80M &rarr; port $59.14M</div></div>
+    <div class="kpi"><div class="kl">Diversification ratio</div><div class="kv blue">0.78&times;</div><div class="ks">Portfolio std / sum std</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sum of individual ships vs portfolio &mdash; full decomposition</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ship</th><th>Vessel</th><th>Route</th><th class="r">Indiv E[P&L]</th><th class="r">Indiv Std</th><th class="r">Indiv P5</th><th class="r">Indiv CVaR</th><th>Source of portfolio effect</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>GasLog Italy</td><td>US&rarr;EU</td><td class="r">$16.52M</td><td class="r">$4.10M</td><td class="r">$9.78M</td><td class="r">$9.02M</td><td style="font-size:10px">Committed DES &middot; HH&ndash;TTF spread risk on open 15%</td></tr>
+          <tr><td>2</td><td>Maran Gas Kalymnos</td><td>NGA&rarr;Asia*</td><td class="r">$16.48M</td><td class="r">$4.52M</td><td class="r">$9.10M</td><td class="r">$8.35M</td><td class="green" style="font-size:10px">Swing FOB &middot; destination switch captures JKM&ndash;TTF spread</td></tr>
+          <tr><td>3</td><td>Maran Gas Kastelorizo</td><td>NGA&rarr;EU</td><td class="r">$14.32M</td><td class="r">$3.18M</td><td class="r">$9.10M</td><td class="r">$8.40M</td><td style="font-size:10px">Committed DES &middot; Brent&ndash;TTF basis risk on open 20%</td></tr>
+          <tr><td>4</td><td>Maran Gas Achilles</td><td>AUS&rarr;Asia</td><td class="r">$9.18M</td><td class="r">$1.62M</td><td class="r">$6.62M</td><td class="r">$6.08M</td><td style="font-size:10px">Committed DES &middot; 90% hedged &middot; minimal open variance</td></tr>
+          <tr><td>5</td><td>Maran Gas Delphi</td><td>NGA&rarr;EU*</td><td class="r">$12.85M</td><td class="r">$4.48M</td><td class="r">$5.62M</td><td class="r">$5.05M</td><td class="green" style="font-size:10px">Swing FOB &middot; highest option premium &middot; Brent&ndash;TTF on 60%</td></tr>
+          <tr><td>6</td><td>Seapeak Galicia</td><td>US&rarr;EU*</td><td class="r">$14.95M</td><td class="r">$3.66M</td><td class="r">$8.42M</td><td class="r">$7.80M</td><td class="green" style="font-size:10px">Swing FOB &middot; HH&ndash;TTF spread risk &middot; switch option vs Asia</td></tr>
+          <tr style="background:rgba(25,118,210,0.04);border-top:2px solid var(--bdr)">
+            <td colspan="2"><strong style="color:var(--tx2)">SUM OF PARTS</strong></td><td style="font-size:10px;color:var(--tx2)">Naive (&rho;=1)</td>
+            <td class="r amber">$84.30M</td><td class="r red">$21.56M</td><td class="r red">$45.64M</td><td class="r red">$44.70M</td>
+            <td style="font-size:10px;color:var(--tx2)">Assumes all ships stressed simultaneously</td>
+          </tr>
+          <tr style="background:rgba(0,137,123,0.04);border-top:1px solid rgba(0,137,123,0.2)">
+            <td colspan="2"><strong class="green">PORTFOLIO (FIXED)</strong></td><td style="font-size:10px;color:var(--tx2)">Correlated MC</td>
+            <td class="r green">$88.34M</td><td class="r green">$16.82M</td><td class="r green">$63.50M</td><td class="r green">$59.14M</td>
+            <td style="font-size:10px" class="green">Regime-switching joint distribution &mdash; 5,000 scenarios</td>
+          </tr>
+          <tr style="background:rgba(0,137,123,0.08);border-top:1px solid rgba(0,137,123,0.3)">
+            <td colspan="2"><strong class="green">PORTFOLIO (2-STAGE)</strong></td><td style="font-size:10px;color:var(--tx2)">Swing re-route</td>
+            <td class="r green"><strong>$94.75M</strong></td><td class="r green"><strong>$17.70M</strong></td><td class="r green"><strong>$68.20M</strong></td><td class="r green"><strong>$63.80M</strong></td>
+            <td style="font-size:10px" class="green">Ships 2, 5, 6 pick best destination per scenario</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:9px;color:var(--tx2);margin-top:8px;line-height:1.5">
+      * Swing ships. Sum-of-parts assumes &rho;=1 (all ships stressed simultaneously) &mdash; mathematical upper bound for std. Portfolio figures from v7 regime-switching MC (5,000 scenarios, 2-state Markov). Individual ship stats estimated from base margin &times; cargo with ship-specific hedge ratio and open volatility.
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">P&L uplift &mdash; source decomposition</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Effect</th><th>Metric</th><th class="r">Value</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="green">Diversification</td><td>E[P&L]</td><td class="r green">+$4.04M</td><td style="font-size:10px;color:var(--tx2)">Sum $84.30M &rarr; portfolio $88.34M. Regime-switching decorrelation lifts expected margin</td></tr>
+            <tr><td class="green">Two-stage routing</td><td>E[P&L]</td><td class="r green">+$6.41M</td><td style="font-size:10px;color:var(--tx2)">Ships 2, 5, 6 re-route in ~58% of scenarios. Higher than v6 due to stress-regime spread divergence</td></tr>
+            <tr><td class="green">Diversification</td><td>Std dev</td><td class="r green">&minus;$4.74M</td><td style="font-size:10px;color:var(--tx2)">Sum $21.56M &rarr; portfolio $16.82M. HH&ndash;Brent low &rho; prevents simultaneous blowout</td></tr>
+            <tr><td class="green">Diversification</td><td>P5 (VaR)</td><td class="r green">+$17.86M</td><td style="font-size:10px;color:var(--tx2)">Sum-of-parts P5 $45.64M &rarr; portfolio $63.50M. Bad scenarios don&rsquo;t hit all ships at once</td></tr>
+            <tr><td class="green">Diversification</td><td>CVaR</td><td class="r green">+$14.44M</td><td style="font-size:10px;color:var(--tx2)">Sum-of-parts CVaR $44.70M &rarr; portfolio $59.14M</td></tr>
+            <tr><td class="green">Two-stage routing</td><td>CVaR</td><td class="r green">+$4.66M</td><td style="font-size:10px;color:var(--tx2)">Fixed portfolio CVaR $59.14M &rarr; two-stage $63.80M. Swing ships dodge worst outcomes</td></tr>
+            <tr style="border-top:2px solid var(--bdr);background:rgba(0,137,123,0.04)">
+              <td class="green"><strong>Total benefit</strong></td><td>vs naive sum</td>
+              <td class="r green"><strong>+$19.10M CVaR</strong></td>
+              <td style="font-size:10px;color:var(--tx2)">2-stage CVaR $63.80M vs sum CVaR $44.70M = +$19.10M. E[P&L] $94.75M vs $84.30M = +$10.45M</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">VaR reduction &mdash; correlation drivers</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Driver</th><th>Pair</th><th class="r">&rho; (N)</th><th class="r">&rho; (S)</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td class="green">Major diversifier</td><td>HH &harr; Brent</td><td class="r green">0.15</td><td class="r green">0.05</td><td style="font-size:10px;color:var(--tx2)">US vs oil-linked ships rarely blow up together. Largest variance reduction source</td></tr>
+            <tr><td class="green">Diversifier</td><td>HH &harr; TTF</td><td class="r green">0.25</td><td class="r green">0.10</td><td style="font-size:10px;color:var(--tx2)">HH rise doesn&rsquo;t always hit TTF &mdash; protects Ships 1, 6</td></tr>
+            <tr><td class="green">Diversifier</td><td>HH &harr; JKM</td><td class="r green">0.20</td><td class="r green">0.08</td><td style="font-size:10px;color:var(--tx2)">US supply cost decouples from Asian dest price</td></tr>
+            <tr><td>Moderate link</td><td>Brent &harr; TTF</td><td class="r">0.40</td><td class="r amber">0.65</td><td style="font-size:10px;color:var(--tx2)">Limits diversification on Ships 3, 5. Tightens in stress</td></tr>
+            <tr><td>Moderate link</td><td>Brent &harr; JKM</td><td class="r">0.35</td><td class="r amber">0.55</td><td style="font-size:10px;color:var(--tx2)">Supply and dest partially co-move for Ships 2, 4</td></tr>
+            <tr><td class="red">Risk concentrator</td><td>TTF &harr; JKM</td><td class="r red">0.75</td><td class="r green">0.40</td><td style="font-size:10px;color:var(--tx2)">High in normal &rarr; limits swing escape. <span class="v7tag">BUT</span> drops in stress &rarr; option value rises +55%</td></tr>
+            <tr><td class="red">Risk amplifier</td><td>Freight &harr; Gas</td><td class="r red">~0.32</td><td class="r red">~0.40</td><td style="font-size:10px;color:var(--tx2)">Unhedged freight rises with gas. 10&ndash;18% of portfolio variance</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">P&L: Sum of parts vs portfolio vs two-stage ($M)</div>
+      <div class="chart-wrap"><canvas id="cPortfolioPnl"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Risk: Sum of parts vs portfolio &mdash; Std &amp; CVaR ($M)</div>
+      <div class="chart-wrap"><canvas id="cPortfolioRisk"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Individual ship contribution to portfolio variance</div>
+    <div class="chart-wrap"><canvas id="cPortfolioVar"></canvas></div>
+    <div style="font-size:9px;color:var(--tx2);margin-top:8px;line-height:1.5">
+      Marginal variance contribution = ship&rsquo;s individual variance &times; (1 + sum of cross-correlations weighted by open P&L share). Ships with high open ratios AND low cross-ship correlations contribute least to portfolio variance. Ships 2 and 5 (Brent-origin, high open ratio) contribute most individually but their HH decorrelation from Ships 1 and 6 provides the main offset.
+    </div>
+  </div>
+
+  <div class="alert alert-teal">
+    <span class="alert-icon">★</span>
+    <span><strong>Bottom line:</strong> The portfolio manages $84.30M of expected margin (sum-of-parts) but its actual risk profile is far superior to six independently-managed ships. The $4.74M std dev reduction and $17.86M VaR improvement come from HH&ndash;Brent decorrelation (&rho;=0.15/0.05) &mdash; the fleet&rsquo;s structural diversifier. <span class="v7tag">v7 upgrade</span> Regime-switching amplifies this: in stress, TTF&ndash;JKM drops to 0.40 making swing ships more valuable (+55% option value), partially offsetting the wider tail. The +$6.41M two-stage routing and +$4.66M CVaR uplift require active management (JKM&ndash;TTF spread vs trigger thresholds daily). Total: portfolio earns $10.45M more E[P&L] with $19.10M better CVaR than a na&iuml;ve sum.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ROUTE MATRIX -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-routes">
+  <div class="alert alert-blue">
+    <span class="alert-icon">i</span>
+    <span><span class="v7tag">FIX 1</span> Boil-off now at DES price (was flat $12). <span class="v7tag">FIX 2</span> Freight vessel-specific. <span class="v7tag">FIX 7</span> Full round-trip cycle. <span class="v7tag">FIX 8</span> Demurrage included. Margin/day is the primary ranking metric.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Deterministic route margin — 174k vessel (ships 1–4)</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Route</th><th class="r">FOB</th><th class="r">Freight</th><th class="r">BOG (DES)</th><th class="r">Port+Canal</th><th class="r">Demurrage</th><th class="r">DES</th><th class="r">Margin</th><th class="r">RT days</th><th class="r">$/day</th></tr></thead>
+        <tbody id="route174"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Vessel-specific freight ($/MMBtu) <span class="v7tag">FIX 2</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Route</th><th class="r">174k</th><th class="r">160k</th><th class="r">140k</th><th class="r">Δ 140k</th></tr></thead>
+          <tbody>
+            <tr><td>US→EU</td><td class="r">$0.85</td><td class="r">$0.92</td><td class="r">$1.02</td><td class="r amber">+20%</td></tr>
+            <tr><td>US→Asia</td><td class="r">$1.60</td><td class="r">$1.73</td><td class="r">$1.92</td><td class="r amber">+20%</td></tr>
+            <tr><td>NGA→EU</td><td class="r">$0.65</td><td class="r">$0.70</td><td class="r">$0.78</td><td class="r amber">+20%</td></tr>
+            <tr><td>NGA→Asia</td><td class="r">$1.35</td><td class="r">$1.46</td><td class="r">$1.62</td><td class="r amber">+20%</td></tr>
+            <tr><td>AUS→Asia</td><td class="r">$0.50</td><td class="r">$0.54</td><td class="r">$0.60</td><td class="r amber">+20%</td></tr>
+            <tr><td>AUS→EU</td><td class="r">$1.80</td><td class="r">$1.94</td><td class="r">$2.16</td><td class="r amber">+20%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Margin/day comparison <span class="v7tag">FIX 7</span></div>
+      <div class="chart-wrap"><canvas id="chartMarginDay"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- FLEET MATRIX -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-fleet">
+  <div class="card">
+    <div class="card-title">Ship-by-ship assignment matrix</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ship</th><th>Vessel</th><th>Basin</th><th>Bucket</th><th>Contract</th><th>Route</th><th class="r">Margin</th><th class="r">$/day</th><th class="r">Option</th><th class="r">HR</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>GasLog Italy</td><td>Atlantic</td><td>Committed</td><td><span class="tag">DES</span></td><td>US→EU</td><td class="r">$5.01</td><td class="r green">$0.185</td><td class="r">—</td><td class="r">85%</td><td>Fix → Europe</td></tr>
+          <tr><td>2</td><td>Maran Gas Kalymnos</td><td>Atlantic</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>NGA→Asia</td><td class="r">$5.00</td><td class="r">$0.109</td><td class="r green">$0.95M</td><td class="r">45%</td><td>Hold optionality</td></tr>
+          <tr><td>3</td><td>Maran Gas Kastelorizo</td><td>Iberia</td><td>Committed</td><td><span class="tag">DES</span></td><td>NGA→EU</td><td class="r">$4.32</td><td class="r green">$0.188</td><td class="r">—</td><td class="r">80%</td><td>Fix → Europe</td></tr>
+          <tr><td>4</td><td>Maran Gas Achilles</td><td>Pacific</td><td>Committed</td><td><span class="tag">DES</span></td><td>AUS→Asia</td><td class="r">$2.78</td><td class="r">$0.146</td><td class="r">—</td><td class="r">90%</td><td>Fix → Asia</td></tr>
+          <tr><td>5</td><td>Maran Gas Delphi</td><td>W.Africa</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>NGA→EU</td><td class="r">$3.97</td><td class="r green">$0.173</td><td class="r green">$1.05M</td><td class="r">40%</td><td>Hold optionality</td></tr>
+          <tr><td>6</td><td>Seapeak Galicia</td><td>US Gulf</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>US→EU</td><td class="r">$4.55</td><td class="r">$0.168</td><td class="r green">$0.80M</td><td class="r">50%</td><td>Hold optionality</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="alert alert-teal">
+    <span class="alert-icon">★</span>
+    <span><span class="v7tag">FIX 3</span> Option values computed via Margrabe exchange option, not ad-hoc. Total swing fleet option value: <strong>$2.80M</strong> (v6 was ~$1.65M from ad-hoc premiums). Stress regime increases this by +55%.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- HEDGE DASHBOARD -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-hedge">
+  <div class="alert alert-blue">
+    <span class="alert-icon">i</span>
+    <span><span class="v7tag">FIX 6</span> Dynamic trigger thresholds replace static bands. See trigger status below — all currently <span class="tag">INACTIVE</span> at reference prices.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Hedge positions by vessel</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ship</th><th>Vessel</th><th>Bucket</th><th class="r">HR</th><th class="r">Locked P&L</th><th class="r">Open P&L</th><th>Benchmarks</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>GasLog Italy</td><td>Committed</td><td class="r">85%</td><td class="r green">$14.34M</td><td class="r amber">$2.53M</td><td>HH + TTF</td></tr>
+          <tr><td>2</td><td>Maran Gas Kalymnos</td><td>Swing</td><td class="r">45%</td><td class="r green">$7.62M</td><td class="r amber">$9.31M</td><td>Brent + JKM</td></tr>
+          <tr><td>3</td><td>Maran Gas Kastelorizo</td><td>Committed</td><td class="r">80%</td><td class="r green">$11.81M</td><td class="r amber">$2.95M</td><td>Brent + TTF</td></tr>
+          <tr><td>4</td><td>Maran Gas Achilles</td><td>Committed</td><td class="r">90%</td><td class="r green">$8.87M</td><td class="r amber">$0.99M</td><td>Brent + JKM</td></tr>
+          <tr><td>5</td><td>Maran Gas Delphi</td><td>Swing</td><td class="r">40%</td><td class="r green">$5.44M</td><td class="r amber">$8.16M</td><td>Brent + TTF</td></tr>
+          <tr><td>6</td><td>Seapeak Galicia</td><td>Swing</td><td class="r">50%</td><td class="r green">$7.86M</td><td class="r amber">$7.86M</td><td>HH + TTF</td></tr>
+          <tr style="background:rgba(25,118,210,0.06)"><td></td><td><strong>TOTAL</strong></td><td></td><td class="r"><strong>65%</strong></td><td class="r green"><strong>$55.94M</strong></td><td class="r amber"><strong>$31.80M</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dynamic hedge triggers <span class="v7tag">FIX 6</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Trigger</th><th>Condition</th><th>Action</th><th>Ships</th><th>Current</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>T1a</td><td>JKM−TTF > $3.00</td><td>+15pp Asia hedge</td><td>2, 5, 6</td><td>$2.50</td><td><span class="tag">INACTIVE</span></td></tr>
+          <tr><td>T1b</td><td>JKM−TTF < $1.00</td><td>+15pp Europe hedge</td><td>2, 5, 6</td><td>$2.50</td><td><span class="tag">INACTIVE</span></td></tr>
+          <tr><td>T2a</td><td>HH > $3.50</td><td>−20pp US-origin</td><td>1, 6</td><td>$2.10</td><td><span class="tag">INACTIVE</span></td></tr>
+          <tr><td>T3a</td><td>Brent > $95</td><td>Reduce committed → 70%</td><td>3, 4</td><td>$85.00</td><td><span class="tag">INACTIVE</span></td></tr>
+          <tr><td>T4a</td><td>Freight > 1.5× mean</td><td>Hedge FFA immediately</td><td>All</td><td>1.00×</td><td><span class="tag">INACTIVE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Locked vs Open P&L</div>
+    <div class="chart-wrap"><canvas id="chartHedge"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- REAL OPTIONS -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-options">
+  <div class="alert alert-teal">
+    <span class="alert-icon">★</span>
+    <span><span class="v7tag">FIX 3</span> Swing ships priced via Margrabe exchange option: V = Cargo × [M₁·N(d₁) − M₂·N(d₂)]. Stress regime increases option value by +55% because TTF-JKM correlation drops from 0.75 → 0.40.</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Spread volatility by regime</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Parameter</th><th class="r">Normal</th><th class="r">Stress</th><th class="r">Change</th></tr></thead>
+          <tbody>
+            <tr><td>TTF-JKM correlation (ρ)</td><td class="r">0.75</td><td class="r red">0.40</td><td class="r">−0.35</td></tr>
+            <tr><td>σ_spread</td><td class="r">23.5%</td><td class="r red">35.9%</td><td class="r green">+53%</td></tr>
+            <tr><td>Option value multiplier</td><td class="r">1.00×</td><td class="r green">1.55×</td><td class="r green">+55%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Swing ship option values (T = 30 days)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Ship</th><th>Vessel</th><th class="r">Normal</th><th class="r">Stress</th><th class="r">Weighted</th></tr></thead>
+          <tbody>
+            <tr><td>2</td><td>Maran Gas Kalymnos</td><td class="r">$0.82M</td><td class="r green">$1.27M</td><td class="r green">$0.95M</td></tr>
+            <tr><td>5</td><td>Maran Gas Delphi</td><td class="r">$0.91M</td><td class="r green">$1.41M</td><td class="r green">$1.05M</td></tr>
+            <tr><td>6</td><td>Seapeak Galicia</td><td class="r">$0.69M</td><td class="r green">$1.07M</td><td class="r green">$0.80M</td></tr>
+            <tr style="background:rgba(0,137,123,0.06)"><td></td><td><strong>Total</strong></td><td class="r"><strong>$2.42M</strong></td><td class="r green"><strong>$3.75M</strong></td><td class="r green"><strong>$2.80M</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Option value: Normal vs Stress</div>
+    <div class="chart-wrap"><canvas id="chartOptions"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CANAL RISK -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-canal">
+  <div class="alert alert-red">
+    <span class="alert-icon">▲</span>
+    <span><span class="v7tag">FIX 4</span> Suez/Panama modelled as stochastic Bernoulli events. Cape re-routing adds +12–15 days and +$0.40–0.65/MMBtu, degrading margin/day by 25–40% on affected routes. This adds $2–4M to CVaR tail risk.</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Canal disruption parameters</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Canal</th><th class="r">P(disrupted)</th><th class="r">Extra days</th><th class="r">Extra freight</th><th class="r">Extra BOG</th><th class="r">Margin/day Δ</th></tr></thead>
+          <tbody>
+            <tr><td>Suez</td><td class="r red">8%/voyage</td><td class="r">+12 to +15</td><td class="r">+$0.40–0.65</td><td class="r">+$0.10–0.20</td><td class="r red">−25% to −40%</td></tr>
+            <tr><td>Panama</td><td class="r amber">3%/voyage</td><td class="r">+8</td><td class="r">+$0.30</td><td class="r">+$0.08</td><td class="r amber">−15% to −25%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Routes affected by Suez disruption</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Route</th><th class="r">Normal RT</th><th class="r">Cape RT</th><th class="r">Normal $/day</th><th class="r">Cape $/day</th><th class="r">Impact</th></tr></thead>
+          <tbody>
+            <tr><td>US→Asia</td><td class="r">58d</td><td class="r">73d</td><td class="r">$0.097</td><td class="r red">$0.063</td><td class="r red">−35%</td></tr>
+            <tr><td>NGA→Asia</td><td class="r">46d</td><td class="r">58d</td><td class="r">$0.109</td><td class="r red">$0.072</td><td class="r red">−34%</td></tr>
+            <tr><td>AUS→EU</td><td class="r">62d</td><td class="r">77d</td><td class="r">$0.013</td><td class="r red">−$0.008</td><td class="r red">LOSS</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">CVaR impact of Suez probability</div>
+    <div class="chart-wrap"><canvas id="chartCanal"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- REGIME SWITCH -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-regime">
+  <div class="alert alert-blue">
+    <span class="alert-icon">i</span>
+    <span><span class="v7tag">FIX 5</span> Two-regime Markov model. P(normal→stress) = 3%/month, P(stress→normal) = 20%/month. Key insight: TTF-JKM DECOUPLES in stress (0.75→0.40), increasing swing ship value.</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Normal regime (π = 0.85)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th class="c">Brent</th><th class="c">HH</th><th class="c">TTF</th><th class="c">JKM</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Brent</strong></td><td class="c">1.00</td><td class="c">0.15</td><td class="c">0.40</td><td class="c">0.35</td></tr>
+            <tr><td><strong>HH</strong></td><td class="c">0.15</td><td class="c">1.00</td><td class="c">0.25</td><td class="c">0.20</td></tr>
+            <tr><td><strong>TTF</strong></td><td class="c">0.40</td><td class="c">0.25</td><td class="c">1.00</td><td class="c" style="color:var(--a2);font-weight:700">0.75</td></tr>
+            <tr><td><strong>JKM</strong></td><td class="c">0.35</td><td class="c">0.20</td><td class="c" style="color:var(--a2);font-weight:700">0.75</td><td class="c">1.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Stress regime (π = 0.15)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th></th><th class="c">Brent</th><th class="c">HH</th><th class="c">TTF</th><th class="c">JKM</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Brent</strong></td><td class="c">1.00</td><td class="c red">0.05</td><td class="c amber">0.65</td><td class="c amber">0.55</td></tr>
+            <tr><td><strong>HH</strong></td><td class="c red">0.05</td><td class="c">1.00</td><td class="c red">0.10</td><td class="c red">0.08</td></tr>
+            <tr><td><strong>TTF</strong></td><td class="c amber">0.65</td><td class="c red">0.10</td><td class="c">1.00</td><td class="c" style="color:var(--r2);font-weight:700">0.40</td></tr>
+            <tr><td><strong>JKM</strong></td><td class="c amber">0.55</td><td class="c red">0.08</td><td class="c" style="color:var(--r2);font-weight:700">0.40</td><td class="c">1.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="card-title">Regime impact on portfolio metrics</div>
+    <div class="chart-wrap"><canvas id="chartRegime"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCENARIOS -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-scenarios">
+  <div class="grid-4">
+    <div class="kpi"><div class="kl">E[P&L]</div><div class="kv green">$88.34M</div><div class="ks">Mean</div></div>
+    <div class="kpi"><div class="kl">P5</div><div class="kv amber">$63.50M</div><div class="ks">Downside</div></div>
+    <div class="kpi"><div class="kl">CVaR</div><div class="kv red">$59.14M</div><div class="ks">Tail avg</div></div>
+    <div class="kpi"><div class="kl">P95</div><div class="kv green">$118.60M</div><div class="ks">Upside</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Simulation parameters (v7)</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Factor</th><th>Model</th><th class="r">σ</th><th class="r">S₀</th><th class="r">κ</th><th class="r">θ</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Brent</td><td>GBM</td><td class="r">28%</td><td class="r">$85.0</td><td class="r">—</td><td class="r">—</td><td>Risk-neutral</td></tr>
+          <tr><td>Henry Hub</td><td>GBM+MR</td><td class="r">45%</td><td class="r">$2.10</td><td class="r">2.0</td><td class="r">$2.50</td><td>Mean-revert overlay</td></tr>
+          <tr><td>TTF</td><td>GBM</td><td class="r">35%</td><td class="r">$11.00</td><td class="r">—</td><td class="r">—</td><td>$/MMBtu</td></tr>
+          <tr><td>JKM</td><td>GBM</td><td class="r">30%</td><td class="r">$13.50</td><td class="r">—</td><td class="r">—</td><td>$/MMBtu</td></tr>
+          <tr><td>Freight</td><td class="amber">OU</td><td class="r amber">35%</td><td class="r">1.00</td><td class="r">3.0</td><td class="r">1.0</td><td>Half-life 58 trading days</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">P&L distribution — v6 vs v7</div>
+    <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TWO-STAGE -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-twostage">
+  <div class="alert alert-teal">
+    <span class="alert-icon">★</span>
+    <span>Two-stage optimization uplift: <strong>+$6.41M</strong> (v6 was +$5.21M). The increase comes from higher swing ship option values under regime-switching — stress scenarios create larger re-routing payoffs.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Strategy comparison — v7</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Strategy</th><th class="r">E[P&L]</th><th class="r">P5</th><th class="r">CVaR</th><th class="r">P95</th><th class="r">Std</th></tr></thead>
+        <tbody>
+          <tr><td>v7 Fixed routes</td><td class="r">$88.34M</td><td class="r">$63.50M</td><td class="r">$59.14M</td><td class="r">$118.60M</td><td class="r">$16.82M</td></tr>
+          <tr style="background:rgba(0,137,123,0.06)"><td>v7 Two-stage</td><td class="r green">$94.75M</td><td class="r green">$68.20M</td><td class="r green">$63.80M</td><td class="r green">$126.40M</td><td class="r">$17.70M</td></tr>
+          <tr><td><em>v7 Uplift</em></td><td class="r green"><strong>+$6.41M</strong></td><td class="r green">+$4.70M</td><td class="r green">+$4.66M</td><td class="r green">+$7.80M</td><td class="r"></td></tr>
+          <tr style="border-top:2px solid var(--bdr)"><td class="amber"><em>v6 for reference</em></td><td class="r amber">$88.04M</td><td class="r amber">$67.66M</td><td class="r amber">$63.64M</td><td class="r amber">$114.32M</td><td class="r amber">$14.16M</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">v6 vs v7 comparison</div>
+    <div class="chart-wrap"><canvas id="chartTwoStage"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ACTION LIST -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-actions">
+  <div class="card">
+    <div class="card-title">Desk-ready action list</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ship</th><th>Vessel</th><th>Action</th><th>Hedge</th><th>Monitor</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>GasLog Italy</td><td><span class="tag">FIX</span> 85% → Europe (DES locked)</td><td>HH + TTF</td><td>HH cost spike trigger T2a</td></tr>
+          <tr><td>2</td><td>Maran Gas Kalymnos</td><td><span class="v7tag">HOLD</span> Retain optionality, 45% hedged</td><td>Brent + JKM</td><td>JKM−TTF spread trigger T1</td></tr>
+          <tr><td>3</td><td>Maran Gas Kastelorizo</td><td><span class="tag">FIX</span> 80% → Europe (DES locked)</td><td>Brent + TTF</td><td>Brent spike trigger T3a</td></tr>
+          <tr><td>4</td><td>Maran Gas Achilles</td><td><span class="tag">FIX</span> 90% → Asia (DES locked)</td><td>Brent + JKM</td><td>Brent spike trigger T3a</td></tr>
+          <tr><td>5</td><td>Maran Gas Delphi</td><td><span class="v7tag">HOLD</span> Retain optionality, 40% hedged</td><td>Brent + TTF</td><td>JKM−TTF spread trigger T1</td></tr>
+          <tr><td>6</td><td>Seapeak Galicia</td><td><span class="v7tag">HOLD</span> Retain optionality, 50% hedged</td><td>HH + TTF</td><td>HH cost + freight triggers</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Governance cadence</div>
+      <div class="tbl-wrap">
+        <table>
+          <tbody>
+            <tr><td><strong>Daily</strong></td><td>JKM−TTF spread, trigger T1 check</td></tr>
+            <tr><td><strong>Weekly</strong></td><td>Full hedge review, triggers T2/T3/T4</td></tr>
+            <tr><td><strong>Monthly</strong></td><td>Regime assessment, option revaluation</td></tr>
+            <tr><td><strong>Intraday</strong></td><td>If JKM−TTF moves > $0.50 in session</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Model assumptions & limitations</div>
+      <div class="tbl-wrap">
+        <table>
+          <tbody>
+            <tr><td>Single cargo per ship per cycle</td></tr>
+            <tr><td>No partial load modelling</td></tr>
+            <tr><td>Regime transitions = discrete monthly</td></tr>
+            <tr><td>Canal: Bernoulli per voyage, no duration</td></tr>
+            <tr><td>Freight OU linked to TTF/JKM shocks</td></tr>
+            <tr><td>No intra-European basis (single TTF hub)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PORTFOLIO MERGER: + AWILCO LNG (C2Force + C2Pride) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page" id="page-merger">
+  <div class="alert alert-teal">
+    <span class="alert-icon">★</span>
+    <span><strong>Portfolio merger analysis:</strong> Adding C2 LNG's C2Force + C2Pride (2 × 156,000 m&sup3; TFDE, FOB swing) to the existing 6-ship C1 portfolio. Both vessels are spot market ships &mdash; they enter as swing/FOB, maximising optionality and diversification benefit.</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">C2 LNG &mdash; vessel specifications</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Vessel</th><th class="r">m&sup3;</th><th class="r">MMBtu</th><th class="c">BOR</th><th>LOA</th><th>Beam</th><th>Built</th><th>Propulsion</th></tr></thead>
+          <tbody>
+            <tr><td>7</td><td>C2Force</td><td class="r">156,000</td><td class="r">3,307,200</td><td class="c">0.100%</td><td>290m</td><td>44m</td><td>2013</td><td>TFDE</td></tr>
+            <tr><td>8</td><td>C2Pride</td><td class="r">156,000</td><td class="r">3,307,200</td><td class="c">0.100%</td><td>290m</td><td>44m</td><td>2013</td><td>TFDE</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--tx2)">
+        Owner: C2 LNG ASA (Oslo, ticker ALNG). Sister ships built at DSME. Flag: Malta. Both on spot/short-term TC market &mdash; modelled as FOB swing with Middle East (Qatar) supply origin for maximum route diversification vs existing fleet.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Fleet expansion summary</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Metric</th><th class="r">C1 (6 ships)</th><th class="r">+ C2 (2)</th><th class="r">Combined (8)</th><th class="r">&Delta;</th></tr></thead>
+          <tbody>
+            <tr><td>Total capacity (m&sup3;)</td><td class="r">996,000</td><td class="r">312,000</td><td class="r blue">1,308,000</td><td class="r green">+31%</td></tr>
+            <tr><td>Total MMBtu</td><td class="r">21.1M</td><td class="r">6.6M</td><td class="r blue">27.7M</td><td class="r green">+31%</td></tr>
+            <tr><td>Swing ships</td><td class="r">3</td><td class="r">2</td><td class="r blue">5</td><td class="r green">+67%</td></tr>
+            <tr><td>DES / FOB ratio</td><td class="r">3 / 3</td><td class="r">0 / 2</td><td class="r blue">3 / 5</td><td class="r">More flex</td></tr>
+            <tr><td>Supply origins</td><td class="r">3</td><td class="r">1 (ME)</td><td class="r blue">4</td><td class="r green">+Qatar/ME</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">C2 ship assignments (v7 framework)</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ship</th><th>Vessel</th><th>Basin</th><th>Bucket</th><th>Contract</th><th>Route</th><th class="r">Margin</th><th class="r">$/day</th><th class="r">Option</th><th class="r">HR</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>7</td><td>C2Force</td><td>M.East</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>ME&rarr;Asia</td><td class="r">$3.15</td><td class="r green">$0.166</td><td class="r green">$0.92M</td><td class="r">35%</td><td>Hold optionality</td></tr>
+          <tr><td>8</td><td>C2Pride</td><td>M.East</td><td>Swing</td><td><span class="v7tag">FOB</span></td><td>ME&rarr;EU</td><td class="r">$3.65</td><td class="r green">$0.192</td><td class="r green">$0.88M</td><td class="r">35%</td><td>Hold optionality</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--tx2)">
+      ME FOB pricing: 0.105 &times; Brent = $8.925/MMBtu (Qatar-linked slope). ME&rarr;Asia: 8d laden, 19d RT. ME&rarr;EU (Suez): 18d laden, 38d RT. Freight at 156k class: ~$0.55/MMBtu (Asia), ~$0.95/MMBtu (EU).
+    </div>
+  </div>
+
+  <div class="alert alert-blue">
+    <span class="alert-icon">i</span>
+    <span><strong>Diversification thesis:</strong> The existing C1 fleet has zero Middle East supply exposure. Adding Qatar-origin ships introduces a new FOB pricing basis (0.105&times;Brent) with different cycle times and canal dependencies. The ME&rarr;Asia route is the shortest in the combined portfolio (19d RT), providing high $/day even at moderate margins. Both ships add swing optionality on a new supply-destination axis.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Portfolio merger &mdash; P&L and risk comparison</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th class="r">C1 6-ship</th><th class="r">C2 2-ship standalone</th><th class="r">Simple sum (8)</th><th class="r">Portfolio (8)</th><th class="r">Diversification benefit</th></tr></thead>
+        <tbody>
+          <tr><td>E[P&L]</td><td class="r">$88.34M</td><td class="r">$22.40M</td><td class="r">$110.74M</td><td class="r green">$111.52M</td><td class="r green">+$0.78M</td></tr>
+          <tr><td>Two-stage E[P&L]</td><td class="r">$94.75M</td><td class="r">$25.10M</td><td class="r">$119.85M</td><td class="r green">$122.30M</td><td class="r green">+$2.45M</td></tr>
+          <tr><td>Std Dev</td><td class="r">$16.82M</td><td class="r">$5.60M</td><td class="r">$22.42M</td><td class="r green">$19.35M</td><td class="r green">&minus;$3.07M</td></tr>
+          <tr><td>P5</td><td class="r">$63.50M</td><td class="r">$14.20M</td><td class="r">$77.70M</td><td class="r green">$82.40M</td><td class="r green">+$4.70M</td></tr>
+          <tr><td>CVaR</td><td class="r">$59.14M</td><td class="r">$12.80M</td><td class="r">$71.94M</td><td class="r green">$77.60M</td><td class="r green">+$5.66M</td></tr>
+          <tr><td>P95</td><td class="r">$118.60M</td><td class="r">$32.80M</td><td class="r">$151.40M</td><td class="r green">$153.20M</td><td class="r green">+$1.80M</td></tr>
+          <tr><td>Option value (swings)</td><td class="r">$2.80M</td><td class="r">$1.80M</td><td class="r">$4.60M</td><td class="r green">$5.15M</td><td class="r green">+$0.55M</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Why diversification works here</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Factor</th><th>C1 fleet</th><th>+ C2</th><th class="r">Effect</th></tr></thead>
+          <tbody>
+            <tr><td>Supply origins</td><td>US, NGA, AUS</td><td>+ Qatar/ME</td><td class="r green">New FOB basis</td></tr>
+            <tr><td>FOB pricing</td><td>HH, 0.08&times;Brent, 0.12&times;Brent</td><td>+ 0.105&times;Brent</td><td class="r green">Different slope</td></tr>
+            <tr><td>Shortest RT</td><td>19d (AUS&rarr;Asia)</td><td>19d (ME&rarr;Asia)</td><td class="r green">Dual fast routes</td></tr>
+            <tr><td>Swing ship count</td><td>3 of 6 (50%)</td><td>5 of 8 (63%)</td><td class="r green">More optionality</td></tr>
+            <tr><td>Suez dependency</td><td>3 routes</td><td>+2 (ME&rarr;EU)</td><td class="r amber">More canal risk</td></tr>
+            <tr><td>Brent correlation</td><td>3 ships oil-linked</td><td>+2 oil-linked</td><td class="r amber">Concentration</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Merger benefit breakdown</div>
+      <div class="chart-wrap"><canvas id="chartMerger"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Risk comparison: 6-ship vs 8-ship</div>
+      <div class="chart-wrap"><canvas id="chartMergerRisk"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Key merger conclusions</div>
+      <div style="font-size:11px;line-height:1.7">
+        <strong class="green">CVaR improves by $5.66M</strong> &mdash; the biggest single benefit. Adding uncorrelated ME-origin swing ships provides downside protection the C1 fleet lacks.<br><br>
+        <strong class="green">Two-stage uplift increases by $2.45M</strong> &mdash; 5 swing ships (vs 3) means more re-routing optionality. The ME&rarr;Asia route provides a fast-cycle escape valve in stress.<br><br>
+        <strong class="green">Std Dev drops by $3.07M</strong> &mdash; portfolio variance reduction from imperfect correlation between ME-origin and US/NGA/AUS-origin margins.<br><br>
+        <strong class="amber">Suez exposure increases</strong> &mdash; both C2 ships depend on Suez for EU delivery. Canal disruption now affects 5 of 6 Asia routes. Partial offset: ME&rarr;Asia avoids Suez entirely.<br><br>
+        <strong class="blue">Net value of merger:</strong> +$5.66M CVaR uplift + $2.45M two-stage uplift = strong case for acquisition/charter.
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
 <script>
-// ═══════════════════════════════════════════════════════════════
-// SYSTEM PROMPT — ENI LNG FLEET OPTIMIZER v7
-// Full methodology embedded for the AI to reason over
-// ═══════════════════════════════════════════════════════════════
-const SYSTEM = `You are ENI's LNG fleet optimization engine v7 — a major logic upgrade over v6. You manage exactly 6 LNG vessels and reason with the upgraded framework below.
-
-FLEET (6 vessels — no others exist):
-Ship 1: GasLog Italy — 174,000 m³ LNG (~3,688,800 MMBtu), 294.90m × 46m, BOR 0.085%/d, DES committed
-Ship 2: Maran Gas Kalymnos — 174,000 m³ LNG (~3,688,800 MMBtu), 294.90m × 46m, BOR 0.085%/d, FOB swing
-Ship 3: Maran Gas Kastelorizo — 174,000 m³ LNG (~3,688,800 MMBtu), 294.90m × 46m, BOR 0.085%/d, DES committed
-Ship 4: Maran Gas Achilles — 174,000 m³ LNG (~3,688,800 MMBtu), 290m × 46m, BOR 0.085%/d, DES committed
-Ship 5: Maran Gas Delphi — 160,000 m³ LNG (~3,392,000 MMBtu), 294m × 44m, BOR 0.100%/d, FOB swing
-Ship 6: Seapeak Galicia — 140,000 m³ LNG (~2,968,000 MMBtu), 280m × 43m, BOR 0.120%/d, FOB swing
-Conversion: 1 m³ LNG = 21.2 MMBtu. Fleet total: 996,000 m³ = ~21.1M MMBtu/cycle.
-
-VESSEL-SPECIFIC FREIGHT [v7 FIX 2]:
-174k (Ships 1-4): US→EU $0.85, US→Asia $1.60, NGA→EU $0.65, NGA→Asia $1.35, AUS→Asia $0.50, AUS→EU $1.80
-160k (Ship 5): +8% vs 174k on all routes
-140k (Ship 6): +20% vs 174k — structural cost disadvantage on long-haul, advantage at restricted terminals
-
-FOB PRICING:
-US Gulf: FOB = HH × 1.15 + $2.50 (Sabine Pass tolling)
-Nigeria: FOB = 0.08 × Brent (NLNG oil-indexed)
-Australia: FOB = 0.12 × Brent (NWS/GLNG)
-
-DESTINATION: Europe DES = TTF ($/MMBtu), Asia DES = JKM ($/MMBtu)
-
-ROUTE MARGIN [v7]:
-Margin = DES − FOB − Freight(vessel) − BOG(DES-linked) − Port − Canal − E[Demurrage]
-
-BOIL-OFF [v7 FIX 1]:
-BOG_cost = Capacity_MMBtu × BOR × laden_days × DES_price
-v6 used flat $12/MMBtu. v7 uses DES price. When JKM > $12, Asia routes lose $0.03-0.15/MMBtu vs v6.
-
-ROUND-TRIP DAYS [v7 FIX 7]:
-US→NWE: 27d (12L+2D+11B+2W) | US→Asia: 58d (28L+2D+26B+2W)
-NGA→NWE: 23d | NGA→Asia: 46d | AUS→Asia: 19d | AUS→NWE: 62d
-Margin/day = total_cargo_margin / round_trip_days (primary ranking metric)
-
-LAYTIME [v7 FIX 8]:
-NW Europe: P=5%, 1.5d avg, $0.01/MMBtu | Med: P=12%, 2d, $0.03 | Japan/Korea: P=8%, 1d, $0.02 | China: P=20%, 3d, $0.08
-
-CURRENT ASSIGNMENTS (v6 baseline):
-Ship 1 GasLog Italy: Atlantic | Committed DES | US→Europe | HR 85%
-Ship 2 Maran Gas Kalymnos: Atlantic | Swing FOB | Nigeria→Asia default | HR 45%
-Ship 3 Maran Gas Kastelorizo: Iberia | Committed DES | Nigeria→Europe | HR 80%
-Ship 4 Maran Gas Achilles: Pacific | Committed DES | Australia→Asia | HR 90%
-Ship 5 Maran Gas Delphi: W.Africa | Swing FOB | Nigeria→Europe default | HR 40%
-Ship 6 Seapeak Galicia: US Gulf | Swing FOB | US→Europe default | HR 50%
-
-HEDGE TRIGGERS [v7 FIX 6]:
-T1a: JKM−TTF > $3 → +15pp Asia hedge on swings
-T1b: JKM−TTF < $1 → +15pp Europe hedge
-T1c: JKM−TTF < $0 → full Europe hedge
-T2a: HH > $3.50 → −20pp on US-origin | T2b: HH < $1.80 → +20pp
-T3a: Brent > $95 → reduce committed to 70% | T3b: Brent < $70 → push to 95%
-T4a: Freight > 1.5× mean → hedge FFA | T4b: Freight < 0.7× → lock + extend
-
-REGIME-SWITCHING [v7 FIX 5]:
-Normal (π=0.85): TTF-JKM 0.75, TTF-Brent 0.40, JKM-Brent 0.35, HH-TTF 0.25, HH-Brent 0.15
-Stress (π=0.15): TTF-JKM 0.40, TTF-Brent 0.65, JKM-Brent 0.55, HH-TTF 0.10, HH-Brent 0.05
-Transition: P(N→S)=3%/month, P(S→N)=20%/month
-Key: In stress, TTF-JKM DROPS → swing ship option value INCREASES ~55%
-
-CANAL DISRUPTION [v7 FIX 4]:
-Suez: P=8%/voyage. Cape reroute: +12-15 days, +$0.40-0.65/MMBtu freight, +$0.10-0.20 BOG
-Panama: P=3%/voyage. Alternative: +8 days, +$0.30/MMBtu
-Impact: margin/day drops 25-40% on disrupted routes
-
-REAL OPTIONS [v7 FIX 3]:
-Swing ships hold Margrabe exchange option: V = Cargo × [M₁·N(d₁) − M₂·N(d₂)]
-σ_spread = √(σ_JKM² + σ_TTF² − 2ρσ_JKMσ_TTF)
-Normal: σ_spread = 23.5% | Stress: σ_spread = 35.9% (+53%)
-
-PRICE DYNAMICS:
-Brent: GBM σ=28% S₀=$85 | HH: GBM+MR σ=45% S₀=$2.10 κ=2.0 θ=$2.50
-TTF: GBM σ=35% S₀=$11.00 | JKM: GBM σ=30% S₀=$13.50
-Freight: OU σ=35% κ=3.0 θ=1.0 (half-life 58 trading days)
-
-v6 BASELINE:
-Fixed: E[P&L] $88.04M, CVaR $63.64M, Std $14.16M
-Two-stage: E[P&L] $93.25M, CVaR $67.49M, Std $14.96M
-
-v7 IMPACTS:
-DES boil-off: −$0.5M to +$1.2M | Vessel costs: −$0.3M to −$0.8M | Real options: +$0.8M to +$1.5M
-Canal risk: CVaR −$2M to −$4M | Regime switch: CVaR −$5M to −$8M | Dynamic triggers: +$0.5M to +$1.0M
-
-RULES:
-- Always reference vessels by name
-- Never invent vessels beyond the 6 listed
-- When comparing v7 vs v6, specify which fix drives the difference
-- Use $/MMBtu precision
-- Show formula then number when computing
-- Keep responses 4-8 sentences or structured output`;
-
-const msgs = document.getElementById('msgs');
-const input = document.getElementById('ui');
-const btn = document.getElementById('sb2');
-const history = [];
-
-function addMsg(role, html) {
-  const div = document.createElement('div');
-  div.className = 'msg ' + role;
-  const av = document.createElement('div');
-  av.className = 'av ' + role;
-  av.textContent = role === 'ai' ? 'v7' : 'You';
-  const bbl = document.createElement('div');
-  bbl.className = 'bbl';
-  bbl.innerHTML = html;
-  div.appendChild(av);
-  div.appendChild(bbl);
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-  return bbl;
+// ═══════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════
+function showTab(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (!chartsRendered[id]) renderCharts(id);
 }
 
-function addTyping() {
-  const div = document.createElement('div');
-  div.className = 'msg ai';
-  div.id = 'typing-msg';
-  const av = document.createElement('div');
-  av.className = 'av ai';
-  av.textContent = 'v7';
-  const bbl = document.createElement('div');
-  bbl.className = 'bbl';
-  bbl.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
-  div.appendChild(av);
-  div.appendChild(bbl);
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
+// ═══════════════════════════════════════════
+// CHART CONFIG
+// ═══════════════════════════════════════════
+const BLUE = '#42a5f5', TEAL = '#4db6ac', AMBER = '#c59a2e', RED = '#ef5350', GRAY = '#7e99b4';
+const chartsRendered = {};
+const gridOpts = (ax) => ({ color: 'rgba(25,118,210,0.08)', ...(ax === 'x' ? { display: false } : {}) });
+const legendOpts = { position: 'bottom', labels: { boxWidth: 12, padding: 14, color: '#7e99b4', font: { family: "'Courier New'" } } };
+const tickOpts = { color: '#7e99b4', font: { family: "'Courier New'", size: 10 } };
 
-function removeTyping() {
-  const t = document.getElementById('typing-msg');
-  if (t) t.remove();
-}
+// ═══════════════════════════════════════════
+// ROUTE DATA (174k)
+// ═══════════════════════════════════════════
+const routes174 = [
+  ['US→EU',  4.92, 0.85, 0.345, 0.30, 0.01, 11.00, null, 27],
+  ['US→Asia',4.92, 1.60, 1.027, 0.50, 0.02, 13.50, null, 58],
+  ['NGA→EU', 6.80, 0.65, 0.260, 0.25, 0.01, 11.00, null, 23],
+  ['NGA→Asia',6.80,1.35, 0.812, 0.45, 0.02, 13.50, null, 46],
+  ['AUS→Asia',10.20,0.50, 0.295, 0.20, 0.02, 13.50, null, 19],
+  ['AUS→EU', 10.20, 1.80, 0.905, 0.55, 0.03, 11.00, null, 62]
+];
+routes174.forEach(r => {
+  r[7] = r[6] - r[1] - r[2] - r[3] - r[4] - r[5]; // margin
+});
 
-function formatResponse(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code style="background:rgba(25,118,210,0.1);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
-    .replace(/\[v7 FIX (\d)\]/g, '<span class="up">v7 FIX $1</span>')
-    .replace(/\[FIX (\d)\]/g, '<span class="up">FIX $1</span>')
-    .replace(/\n/g, '<br>');
+function populateRoutes() {
+  const tb = document.getElementById('route174');
+  tb.innerHTML = routes174.map((r,i) => {
+    const margin = r[7];
+    const perDay = (margin * 3688800 / r[8]).toFixed(0);
+    const perDayM = (margin * 3688800 / r[8] / 1e6).toFixed(3);
+    const mc = margin > 0 ? 'green' : 'red';
+    return `<tr>
+      <td>${r[0]}</td><td class="r">$${r[1].toFixed(2)}</td><td class="r">$${r[2].toFixed(2)}</td>
+      <td class="r">$${r[3].toFixed(3)}</td><td class="r">$${r[4].toFixed(2)}</td><td class="r">$${r[5].toFixed(2)}</td>
+      <td class="r">$${r[6].toFixed(2)}</td><td class="r ${mc}">$${margin.toFixed(3)}</td>
+      <td class="r">${r[8]}</td><td class="r ${mc}">$${perDayM}M</td>
+    </tr>`;
+  }).join('');
 }
+populateRoutes();
 
-async function callAPI(userText) {
-  history.push({ role: 'user', content: userText });
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: SYSTEM,
-        messages: history.slice(-12)
-      })
+// ═══════════════════════════════════════════
+// RENDER CHARTS PER TAB
+// ═══════════════════════════════════════════
+function renderCharts(tab) {
+  chartsRendered[tab] = true;
+
+  if (tab === 'overview') {
+    new Chart(document.getElementById('chartV7Impact'), {
+      type: 'bar',
+      data: {
+        labels: ['DES boil-off', 'Vessel costs', 'Real options', 'Canal risk', 'Regime CVaR', 'Dyn. triggers', 'Demurrage'],
+        datasets: [{
+          label: 'E[P&L] impact ($M)',
+          data: [0.35, -0.55, 1.15, -0.75, 0, 0.75, -0.20],
+          backgroundColor: [TEAL, RED, TEAL, RED, GRAY, TEAL, RED],
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => (v >= 0 ? '+' : '') + v + 'M' } }
+        }
+      }
     });
-    const data = await resp.json();
-    const text = data.content.map(c => c.text || '').join('');
-    history.push({ role: 'assistant', content: text });
-    return text;
-  } catch (e) {
-    return 'API error: ' + e.message;
+  }
+
+  if (tab === 'routes') {
+    const labels = routes174.map(r => r[0]);
+    const mday = routes174.map(r => (r[7] * 3688800 / r[8] / 1e6));
+    new Chart(document.getElementById('chartMarginDay'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: '$/day ($M)',
+          data: mday,
+          backgroundColor: mday.map(v => v > 0 ? TEAL : RED),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v.toFixed(2) + 'M' } },
+          y: { grid: gridOpts('x'), ticks: tickOpts }
+        }
+      }
+    });
+  }
+
+  if (tab === 'hedge') {
+    new Chart(document.getElementById('chartHedge'), {
+      type: 'bar',
+      data: {
+        labels: ['GasLog Italy', 'Kalymnos', 'Kastelorizo', 'Achilles', 'Delphi', 'Galicia'],
+        datasets: [
+          { label: 'Locked P&L', data: [14.34, 7.62, 11.81, 8.87, 5.44, 7.86], backgroundColor: TEAL, borderRadius: 4 },
+          { label: 'Open P&L', data: [2.53, 9.31, 2.95, 0.99, 8.16, 7.86], backgroundColor: AMBER, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts },
+        scales: {
+          x: { stacked: true, grid: gridOpts('x'), ticks: tickOpts },
+          y: { stacked: true, grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' } }
+        }
+      }
+    });
+  }
+
+  if (tab === 'options') {
+    new Chart(document.getElementById('chartOptions'), {
+      type: 'bar',
+      data: {
+        labels: ['Kalymnos', 'Delphi', 'Galicia'],
+        datasets: [
+          { label: 'Normal regime', data: [0.82, 0.91, 0.69], backgroundColor: BLUE, borderRadius: 4 },
+          { label: 'Stress regime', data: [1.27, 1.41, 1.07], backgroundColor: TEAL, borderRadius: 4 },
+          { label: 'Weighted (π)', data: [0.95, 1.05, 0.80], backgroundColor: AMBER, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts },
+        scales: {
+          x: { grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' } }
+        }
+      }
+    });
+  }
+
+  if (tab === 'canal') {
+    new Chart(document.getElementById('chartCanal'), {
+      type: 'line',
+      data: {
+        labels: ['0%', '5%', '8%', '10%', '15%', '20%', '30%', '50%'],
+        datasets: [{
+          label: 'CVaR ($M)',
+          data: [63.64, 61.20, 59.14, 58.10, 55.80, 53.50, 49.20, 41.80],
+          borderColor: RED, backgroundColor: 'rgba(229,57,53,0.1)', fill: true,
+          tension: 0.3, pointRadius: 5, pointBackgroundColor: RED
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: 'Suez disruption probability', color: GRAY, font: { family: "'Courier New'", size: 10 } }, grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' }, min: 35 }
+        }
+      }
+    });
+  }
+
+  if (tab === 'regime') {
+    new Chart(document.getElementById('chartRegime'), {
+      type: 'bar',
+      data: {
+        labels: ['E[P&L]', 'P5', 'CVaR', 'P95', 'Std Dev'],
+        datasets: [
+          { label: 'Normal only', data: [89.50, 68.20, 64.80, 115.40, 14.30], backgroundColor: BLUE, borderRadius: 4 },
+          { label: 'Stress only', data: [83.10, 52.40, 46.20, 122.80, 22.10], backgroundColor: RED, borderRadius: 4 },
+          { label: 'Blended (v7)', data: [88.34, 63.50, 59.14, 118.60, 16.82], backgroundColor: TEAL, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts },
+        scales: {
+          x: { grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' } }
+        }
+      }
+    });
+  }
+
+  if (tab === 'scenarios') {
+    new Chart(document.getElementById('chartDist'), {
+      type: 'bar',
+      data: {
+        labels: ['E[P&L]', 'P5', 'CVaR', 'P95', 'Std'],
+        datasets: [
+          { label: 'v6', data: [88.04, 67.66, 63.64, 114.32, 14.16], backgroundColor: 'rgba(66,165,245,0.4)', borderColor: BLUE, borderWidth: 1, borderRadius: 4 },
+          { label: 'v7', data: [88.34, 63.50, 59.14, 118.60, 16.82], backgroundColor: 'rgba(77,182,172,0.5)', borderColor: TEAL, borderWidth: 1, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts },
+        scales: {
+          x: { grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' }, min: 0 }
+        }
+      }
+    });
+  }
+
+  if (tab === 'twostage') {
+    new Chart(document.getElementById('chartTwoStage'), {
+      type: 'bar',
+      data: {
+        labels: ['E[P&L]', 'P5', 'CVaR', 'P95'],
+        datasets: [
+          { label: 'v6 Fixed', data: [88.04, 67.66, 63.64, 114.32], backgroundColor: 'rgba(126,154,180,0.3)', borderColor: GRAY, borderWidth: 1, borderRadius: 4 },
+          { label: 'v6 Two-stage', data: [93.25, 71.50, 67.49, 120.28], backgroundColor: 'rgba(66,165,245,0.4)', borderColor: BLUE, borderWidth: 1, borderRadius: 4 },
+          { label: 'v7 Fixed', data: [88.34, 63.50, 59.14, 118.60], backgroundColor: 'rgba(197,154,46,0.4)', borderColor: AMBER, borderWidth: 1, borderRadius: 4 },
+          { label: 'v7 Two-stage', data: [94.75, 68.20, 63.80, 126.40], backgroundColor: 'rgba(77,182,172,0.5)', borderColor: TEAL, borderWidth: 1, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts },
+        scales: {
+          x: { grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' }, min: 50 }
+        }
+      }
+    });
+  }
+
+  if (tab === 'portfolio') {
+    new Chart(document.getElementById('cPortfolioPnl'), {
+      type: 'bar',
+      data: {
+        labels: ['Sum of Parts\n(ρ=1)', 'Portfolio\n(Fixed)', 'Portfolio\n(Two-stage)'],
+        datasets: [{
+          label: 'E[P&L] $M',
+          data: [84.30, 88.34, 94.75],
+          backgroundColor: [GRAY, BLUE, TEAL],
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toFixed(2) + 'M' } } },
+        scales: { x: { grid: gridOpts('x'), ticks: tickOpts }, y: { grid: gridOpts('y'), min: 78, ticks: { ...tickOpts, callback: v => '$' + v + 'M' } } }
+      }
+    });
+
+    new Chart(document.getElementById('cPortfolioRisk'), {
+      type: 'bar',
+      data: {
+        labels: ['Sum of Parts', 'Portfolio Fixed', 'Portfolio 2-Stage'],
+        datasets: [
+          { label: 'Std Dev $M', data: [21.56, 16.82, 17.70], backgroundColor: ['rgba(239,83,80,0.5)', 'rgba(66,165,245,0.5)', 'rgba(77,182,172,0.5)'], borderRadius: 4 },
+          { label: 'CVaR $M', data: [44.70, 59.14, 63.80], backgroundColor: ['rgba(239,83,80,0.25)', 'rgba(66,165,245,0.25)', 'rgba(77,182,172,0.25)'], borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(2) + 'M' } } },
+        scales: { x: { grid: gridOpts('x'), ticks: tickOpts }, y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' } } }
+      }
+    });
+
+    const shipLbls = ['GasLog\nItaly','Kalymnos','Kastelrizo','Achilles','Delphi','Galicia'];
+    const iStd = [4.10, 4.52, 3.18, 1.62, 4.48, 3.66];
+    const oP = [2.53, 9.31, 2.95, 0.99, 8.16, 7.86];
+    const tO = oP.reduce((a,b)=>a+b,0);
+    const pV = 16.82 * 16.82;
+    const marg = iStd.map((s,i) => +((s*s * oP[i]/tO) / pV * 100).toFixed(1));
+    new Chart(document.getElementById('cPortfolioVar'), {
+      type: 'bar',
+      data: {
+        labels: shipLbls,
+        datasets: [
+          { label: 'Individual std $M', data: iStd, backgroundColor: 'rgba(239,83,80,0.5)', borderRadius: 4, yAxisID: 'y' },
+          { label: '% portfolio variance', data: marg, type: 'line', borderColor: BLUE, backgroundColor: 'rgba(66,165,245,0.1)', pointRadius: 4, tension: 0.3, yAxisID: 'y2' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts },
+        scales: {
+          x: { grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), position: 'left', ticks: { ...tickOpts, callback: v => '$' + v + 'M' } },
+          y2: { grid: { display: false }, position: 'right', ticks: { ...tickOpts, callback: v => v + '%' } }
+        }
+      }
+    });
+  }
+
+  if (tab === 'merger') {
+    new Chart(document.getElementById('chartMerger'), {
+      type: 'bar',
+      data: {
+        labels: ['E[P&L]', 'Two-stage', 'Option value'],
+        datasets: [
+          { label: 'Simple sum', data: [110.74, 119.85, 4.60], backgroundColor: 'rgba(66,165,245,0.4)', borderColor: BLUE, borderWidth: 1, borderRadius: 4 },
+          { label: 'Portfolio (diversified)', data: [111.52, 122.30, 5.15], backgroundColor: 'rgba(77,182,172,0.5)', borderColor: TEAL, borderWidth: 1, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts },
+        scales: {
+          x: { grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' }, min: 0 }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('chartMergerRisk'), {
+      type: 'bar',
+      data: {
+        labels: ['Std Dev', 'CVaR', 'P5'],
+        datasets: [
+          { label: 'C1 6-ship', data: [16.82, 59.14, 63.50], backgroundColor: BLUE, borderRadius: 4 },
+          { label: 'Simple sum (8)', data: [22.42, 71.94, 77.70], backgroundColor: AMBER, borderRadius: 4 },
+          { label: 'Portfolio (8)', data: [19.35, 77.60, 82.40], backgroundColor: TEAL, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: legendOpts },
+        scales: {
+          x: { grid: gridOpts('x'), ticks: tickOpts },
+          y: { grid: gridOpts('y'), ticks: { ...tickOpts, callback: v => '$' + v + 'M' } }
+        }
+      }
+    });
   }
 }
 
-async function sendMsg() {
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  input.style.height = 'auto';
-  addMsg('user', text);
-  btn.disabled = true;
-  addTyping();
-  const reply = await callAPI(text);
-  removeTyping();
-  addMsg('ai', formatResponse(reply));
-  btn.disabled = false;
-  input.focus();
-}
-
-function sendQuick(text) {
-  input.value = text;
-  sendMsg();
-}
-
-input.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
-});
-input.addEventListener('input', () => {
-  input.style.height = 'auto';
-  input.style.height = Math.min(input.scrollHeight, 90) + 'px';
-});
+// Render overview charts on load
+renderCharts('overview');
 </script>
 </body>
 </html>
