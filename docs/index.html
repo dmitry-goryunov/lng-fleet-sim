@@ -19,9 +19,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .pill{font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--accent);letter-spacing:.4px}
 .pill.gold{color:var(--gold);border-color:rgba(245,158,11,.3)}
 .pill.warn{color:var(--red);border-color:rgba(248,113,113,.3)}
-.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .nav::-webkit-scrollbar{display:none}
-.tab{padding:11px 18px;font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;user-select:none}
+.tab{padding:11px 18px;font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;user-select:none;-webkit-tap-highlight-color:transparent}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .content{padding:24px 28px;max-width:1380px;margin:0 auto}
@@ -39,7 +39,38 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 .sec-title{font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
-@media(max-width:860px){.grid-2,.grid-3{grid-template-columns:1fr}}
+@media(max-width:860px){.grid-2,.grid-3,.sc-grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .header{padding:10px 14px;gap:8px}
+  .logo{width:32px;height:32px;font-size:15px;border-radius:8px}
+  .hdr-title{font-size:12px}
+  .hdr-sub{font-size:10px}
+  .pills{display:none}
+  .nav{padding:0 8px}
+  .tab{padding:9px 10px;font-size:10px;letter-spacing:.3px}
+  .content{padding:12px 10px}
+  .kpi-strip{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .kpi{padding:10px 12px}
+  .kpi-value{font-size:16px}
+  .kpi-label{font-size:9px}
+  .kpi-sub{font-size:9px}
+  .card{padding:12px 11px;border-radius:9px;margin-bottom:13px}
+  .card-title{font-size:10px;margin-bottom:11px}
+  .tbl{font-size:11px}
+  .tbl th{font-size:9px;padding:4px 6px}
+  .tbl td{padding:6px 6px}
+  .uplift{flex-direction:column;gap:8px;padding:11px 13px}
+  .uplift-num{font-size:20px}
+  .uplift-text{font-size:11px}
+  .warnbox{font-size:11px;padding:11px 13px}
+  .note{font-size:11px;padding:11px 13px}
+  .fn{font-size:9px}
+  .sec-title{font-size:11px}
+  .chart-wrap canvas{max-height:170px}
+  .sc-grid{gap:10px;margin-bottom:14px}
+  .sc-card{padding:12px 13px}
+  .sc-val{font-size:20px}
+}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px}
 .card-title{font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);margin-bottom:14px}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
@@ -120,7 +151,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
   <div class="tab" onclick="showTab('actions',this)">Action List</div>
 </div>
 
-<div class="content">
+<!-- mobile benchmark strip — visible only on small screens -->
+<div id="mob-bench" style="display:none;overflow-x:auto;white-space:nowrap;padding:7px 12px;background:var(--surface);border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);-webkit-overflow-scrolling:touch;scrollbar-width:none">
+  <span style="margin-right:14px">Brent <strong style="color:var(--text)">$82.0</strong></span>
+  <span style="margin-right:14px">HH <strong style="color:var(--text)">$2.40</strong></span>
+  <span style="margin-right:14px">TTF <strong style="color:var(--text)">$11.50</strong></span>
+  <span style="margin-right:14px">JKM <strong style="color:var(--text)">$13.20</strong></span>
+  <span style="margin-right:14px">E[P&amp;L] <strong style="color:var(--green)">$88.04M</strong></span>
+  <span>Freight <strong style="color:var(--red)">UNHEDGED</strong></span>
+</div>
+
+<style>
+@media(max-width:600px){
+  #mob-bench{display:block!important}
+  #mob-bench::-webkit-scrollbar{display:none}
+}
+</style>
 
 <!-- OVERVIEW -->
 <div class="section active" id="tab-overview">
