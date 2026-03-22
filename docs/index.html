@@ -143,6 +143,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
 <div class="nav">
   <div class="tab active" onclick="showTab('overview',this)">Overview</div>
   <div class="tab" onclick="showTab('positions',this)">Positions</div>
+  <div class="tab" onclick="showTab('correlations',this)">Correlations</div>
   <div class="tab" onclick="showTab('routes',this)">Route Matrix</div>
   <div class="tab" onclick="showTab('fleet',this)">Ship Matrix</div>
   <div class="tab" onclick="showTab('hedge',this)">Hedge Dashboard</div>
@@ -704,6 +705,114 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13
   </div>
 </div>
 
+<!-- CORRELATIONS -->
+<div class="section" id="tab-correlations">
+  <div class="sec-title">Correlation Sensitivity — Open P&amp;L Impact</div>
+
+  <div class="note" style="margin-bottom:18px;margin-top:0">
+    Adjust correlations between price benchmarks below. Open P&amp;L for each ship is recalculated using the formula:<br>
+    <strong>Open P&amp;L (adjusted) = Base open P&amp;L × spread_vol_ratio</strong><br>
+    where spread volatility = √(σ²_supply + σ²_dest − 2ρ·σ_supply·σ_dest). Higher correlation = lower spread vol = lower effective open exposure.
+  </div>
+
+  <div class="grid-2">
+    <!-- SLIDERS -->
+    <div class="card">
+      <div class="card-title">Price Benchmark Correlations</div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">TTF — JKM <span style="color:var(--text2);font-size:11px;float:right">affects swing ship destination spread</span></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="c-ttf-jkm" min="-100" max="100" value="70" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
+          <span id="v-ttf-jkm" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.70</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">HH — TTF <span style="color:var(--text2);font-size:11px;float:right">affects Ships 1 &amp; 6 (US→Europe)</span></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="c-hh-ttf" min="-100" max="100" value="25" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
+          <span id="v-hh-ttf" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.25</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">HH — JKM <span style="color:var(--text2);font-size:11px;float:right">affects Ship 2 (Nigeria→Asia, US supply)</span></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="c-hh-jkm" min="-100" max="100" value="20" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
+          <span id="v-hh-jkm" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.20</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Brent — TTF <span style="color:var(--text2);font-size:11px;float:right">affects Ships 3 &amp; 5 (Nigeria→Europe)</span></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="c-brent-ttf" min="-100" max="100" value="40" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
+          <span id="v-brent-ttf" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.40</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Brent — JKM <span style="color:var(--text2);font-size:11px;float:right">affects Ships 2 &amp; 4 (NGA/AUS→Asia)</span></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="c-brent-jkm" min="-100" max="100" value="35" oninput="updateCorr()" style="flex:1;accent-color:var(--accent)">
+          <span id="v-brent-jkm" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--accent)">0.35</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:4px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Freight — Gas (TTF/JKM avg) <span style="color:var(--red);font-size:11px;float:right">all ships — unhedged</span></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="c-freight-gas" min="-100" max="100" value="32" oninput="updateCorr()" style="flex:1;accent-color:var(--red)">
+          <span id="v-freight-gas" style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:40px;text-align:right;color:var(--red)">0.32</span>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button onclick="resetCorr()" style="flex:1;padding:8px;background:rgba(56,189,248,.08);border:1px solid var(--border2);border-radius:6px;color:var(--accent);font-family:var(--mono);font-size:11px;cursor:pointer">Reset to v6 defaults</button>
+        <button onclick="stressCorr('decouple')" style="flex:1;padding:8px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:6px;color:var(--red);font-family:var(--mono);font-size:11px;cursor:pointer">HH decouple stress</button>
+        <button onclick="stressCorr('high')" style="flex:1;padding:8px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);border-radius:6px;color:var(--green);font-family:var(--mono);font-size:11px;cursor:pointer">High corr scenario</button>
+      </div>
+    </div>
+
+    <!-- CORRELATION MATRIX VISUAL -->
+    <div class="card">
+      <div class="card-title">Correlation Matrix</div>
+      <canvas id="cCorrMatrix" style="width:100%;max-height:260px"></canvas>
+    </div>
+  </div>
+
+  <!-- OPEN P&L TABLE -->
+  <div class="card">
+    <div class="card-title">Open P&amp;L — Adjusted for Current Correlations</div>
+    <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Ship</th><th>Vessel</th><th>Route</th><th>Supply</th><th>Dest.</th>
+          <th>ρ used</th>
+          <th>σ_supply</th><th>σ_dest</th>
+          <th>Spread vol</th>
+          <th>Base open $M</th>
+          <th>Adj. open $M</th>
+          <th>Δ vs base</th>
+        </tr>
+      </thead>
+      <tbody id="corrTableBody"></tbody>
+    </table>
+    </div>
+    <div class="fn" id="corrFootnote"></div>
+  </div>
+
+  <!-- OPEN P&L CHART -->
+  <div class="card">
+    <div class="card-title">Base vs Correlation-Adjusted Open P&amp;L by Ship ($M)</div>
+    <div class="chart-wrap" style="height:220px"><canvas id="cCorrOpen"></canvas></div>
+  </div>
+
+  <div class="note" id="corrNote"></div>
+</div>
+
 </div><!-- /content -->
 
 <script>
@@ -713,6 +822,7 @@ function showTab(id, el) {
   document.getElementById('tab-' + id).classList.add('active');
   el.classList.add('active');
   initCharts();
+  if (id === 'correlations') updateCorr();
 }
 
 const C = { a:'#38bdf8', g:'#34d399', gold:'#f59e0b', r:'#f87171', m:'#64a0c0', grid:'rgba(56,189,248,0.08)' };
@@ -724,6 +834,208 @@ const baseO = {
     y:{ ticks:{ color:C.m, font:{ family:'DM Mono', size:10 } }, grid:{ color:C.grid } }
   }
 };
+
+// ── SHIP DATA ─────────────────────────────────────────────────────────────
+// Each ship: name, route, supply benchmark, dest benchmark, openRatio, basePnl, vol_supply, vol_dest, corrKey
+const SHIPS = [
+  { n:'GasLog Italy',       route:'US→EU',   sup:'HH',    dst:'TTF', openR:0.15, basePnl:2.53,  vs:0.45, vd:0.35, ck:'hh-ttf'   },
+  { n:'Kalymnos',           route:'NGA→Asia', sup:'Brent', dst:'JKM', openR:0.55, basePnl:9.31,  vs:0.28, vd:0.30, ck:'brent-jkm'},
+  { n:'Kastelorizo',        route:'NGA→EU',  sup:'Brent', dst:'TTF', openR:0.20, basePnl:2.95,  vs:0.28, vd:0.35, ck:'brent-ttf'},
+  { n:'Achilles',           route:'AUS→Asia', sup:'Brent', dst:'JKM', openR:0.10, basePnl:0.99,  vs:0.28, vd:0.30, ck:'brent-jkm'},
+  { n:'Delphi',             route:'NGA→EU',  sup:'Brent', dst:'TTF', openR:0.60, basePnl:8.16,  vs:0.28, vd:0.35, ck:'brent-ttf'},
+  { n:'Galicia',            route:'US→EU',   sup:'HH',    dst:'TTF', openR:0.50, basePnl:7.86,  vs:0.45, vd:0.35, ck:'hh-ttf'   },
+];
+
+// Baseline spread vol (denominator) — computed at default correlations
+// spreadVol = sqrt(vs² + vd² - 2ρ·vs·vd)
+function spreadVol(vs, vd, rho) {
+  return Math.sqrt(vs*vs + vd*vd - 2*rho*vs*vd);
+}
+
+const DEFAULT_CORR = { 'ttf-jkm':0.70, 'hh-ttf':0.25, 'hh-jkm':0.20, 'brent-ttf':0.40, 'brent-jkm':0.35, 'freight-gas':0.32 };
+
+function getCorr() {
+  return {
+    'ttf-jkm':   document.getElementById('c-ttf-jkm').value / 100,
+    'hh-ttf':    document.getElementById('c-hh-ttf').value / 100,
+    'hh-jkm':    document.getElementById('c-hh-jkm').value / 100,
+    'brent-ttf': document.getElementById('c-brent-ttf').value / 100,
+    'brent-jkm': document.getElementById('c-brent-jkm').value / 100,
+    'freight-gas':document.getElementById('c-freight-gas').value / 100,
+  };
+}
+
+function setSliders(vals) {
+  Object.entries(vals).forEach(([k,v]) => {
+    document.getElementById('c-'+k).value = Math.round(v*100);
+    document.getElementById('v-'+k).textContent = v.toFixed(2);
+  });
+}
+
+function resetCorr() { setSliders(DEFAULT_CORR); updateCorr(); }
+function stressCorr(s) {
+  if (s === 'decouple') setSliders({'ttf-jkm':0.70,'hh-ttf':-0.05,'hh-jkm':-0.10,'brent-ttf':0.40,'brent-jkm':0.35,'freight-gas':0.45});
+  if (s === 'high')     setSliders({'ttf-jkm':0.92,'hh-ttf':0.60,'hh-jkm':0.55,'brent-ttf':0.72,'brent-jkm':0.68,'freight-gas':0.15});
+  updateCorr();
+}
+
+let corrChart = null;
+let corrMatrixChart = null;
+
+function updateCorr() {
+  // update slider labels
+  ['ttf-jkm','hh-ttf','hh-jkm','brent-ttf','brent-jkm','freight-gas'].forEach(k => {
+    const v = document.getElementById('c-'+k).value / 100;
+    document.getElementById('v-'+k).textContent = v.toFixed(2);
+  });
+
+  const corr = getCorr();
+  const freightVol = 0.35;
+  const freightRho = corr['freight-gas'];
+
+  // compute adjusted open P&L per ship
+  const results = SHIPS.map(s => {
+    const rhoBase = DEFAULT_CORR[s.ck];
+    const rhoCurr = corr[s.ck];
+    const svBase = spreadVol(s.vs, s.vd, rhoBase);
+    const svCurr = spreadVol(s.vs, s.vd, rhoCurr);
+    // freight adds unhedged vol — correlated with dest
+    const freightAdj = s.vd * freightVol * (1 - freightRho);
+    const svCurrFrt = Math.sqrt(svCurr*svCurr + freightAdj*freightAdj);
+    const svBaseFrt = Math.sqrt(svBase*svBase + freightAdj*freightAdj);
+    const ratio = svBaseFrt > 0 ? svCurrFrt / svBaseFrt : 1;
+    const adjPnl = +(s.basePnl * ratio).toFixed(2);
+    const delta = +(adjPnl - s.basePnl).toFixed(2);
+    return { ...s, rho: rhoCurr, svBase, svCurr: svCurrFrt, ratio, adjPnl, delta };
+  });
+
+  // render table
+  const tbody = document.getElementById('corrTableBody');
+  tbody.innerHTML = '';
+  results.forEach(r => {
+    const dClass = r.delta > 0.05 ? 'red' : r.delta < -0.05 ? 'green' : 'muted';
+    const dSign  = r.delta > 0 ? '+' : '';
+    tbody.innerHTML += `<tr>
+      <td class="muted">${SHIPS.indexOf(r)+1}</td>
+      <td class="blue">${r.n}</td>
+      <td>${r.route}</td>
+      <td>${r.sup}</td>
+      <td>${r.dst}</td>
+      <td class="num">${r.rho.toFixed(2)}</td>
+      <td class="num muted">${(r.vs*100).toFixed(0)}%</td>
+      <td class="num muted">${(r.vd*100).toFixed(0)}%</td>
+      <td class="num ${r.svCurr > r.svBase*1.05 ? 'red' : r.svCurr < r.svBase*0.95 ? 'green' : ''}">${(r.svCurr*100).toFixed(1)}%</td>
+      <td class="num muted">$${r.basePnl.toFixed(2)}M</td>
+      <td class="num ${r.adjPnl > r.basePnl*1.05 ? 'red' : r.adjPnl < r.basePnl*0.95 ? 'green' : 'gold'}">$${r.adjPnl.toFixed(2)}M</td>
+      <td class="num ${dClass}">${dSign}$${Math.abs(r.delta).toFixed(2)}M</td>
+    </tr>`;
+  });
+
+  // total open
+  const totalBase = results.reduce((a,r)=>a+r.basePnl,0);
+  const totalAdj  = results.reduce((a,r)=>a+r.adjPnl,0);
+  const totalDelta = +(totalAdj - totalBase).toFixed(2);
+  const dSign = totalDelta >= 0 ? '+' : '';
+  tbody.innerHTML += `<tr style="border-top:1px solid var(--border2);font-weight:600">
+    <td colspan="9" style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px">Total open exposure</td>
+    <td class="num">$${totalBase.toFixed(2)}M</td>
+    <td class="num ${totalDelta>0.1?'red':totalDelta<-0.1?'green':'gold'}">$${totalAdj.toFixed(2)}M</td>
+    <td class="num ${totalDelta>0.1?'red':totalDelta<-0.1?'green':'muted'}">${dSign}$${Math.abs(totalDelta).toFixed(2)}M</td>
+  </tr>`;
+
+  document.getElementById('corrFootnote').innerHTML =
+    `Spread vol = √(σ²_supply + σ²_dest − 2ρ·σ_supply·σ_dest) + unhedged freight component (σ_freight=${(freightVol*100).toFixed(0)}%, ρ_frt-gas=${freightRho.toFixed(2)}). ` +
+    `Adjusted open P&L scales base open by (current spread vol / baseline spread vol). Base correlations from v6 notebook.`;
+
+  // note
+  const bigMover = results.reduce((a,b)=>Math.abs(b.delta)>Math.abs(a.delta)?b:a);
+  document.getElementById('corrNote').innerHTML =
+    `<strong>Largest mover:</strong> ${bigMover.n} (${bigMover.route}) — open P&L moves from $${bigMover.basePnl}M to <strong>$${bigMover.adjPnl}M</strong> (${bigMover.delta>=0?'+':''}$${bigMover.delta}M) under current correlations. ` +
+    `Total portfolio open: $${totalBase.toFixed(2)}M → <strong>$${totalAdj.toFixed(2)}M</strong>. ` +
+    (Math.abs(corr['hh-ttf']) < 0.10 ? '<span style="color:var(--red)"> HH–TTF near zero — US-origin ships face maximum spread risk.</span>' :
+     corr['hh-ttf'] > 0.55 ? '<span style="color:var(--green)"> High HH–TTF correlation compresses spread risk on Ships 1 &amp; 6.</span>' : '');
+
+  // update bar chart
+  const labels = results.map(r => r.n);
+  const baseVals = results.map(r => r.basePnl);
+  const adjVals  = results.map(r => r.adjPnl);
+
+  if (corrChart) {
+    corrChart.data.datasets[0].data = baseVals;
+    corrChart.data.datasets[1].data = adjVals;
+    corrChart.update();
+  } else {
+    corrChart = new Chart(document.getElementById('cCorrOpen'), {
+      type:'bar',
+      data:{ labels, datasets:[
+        { label:'Base open $M', data:baseVals, backgroundColor:'rgba(245,158,11,.5)', borderRadius:4 },
+        { label:'Adj. open $M', data:adjVals,  backgroundColor:'rgba(248,113,113,.6)', borderRadius:4 }
+      ]},
+      options:{ ...baseO }
+    });
+  }
+
+  // correlation matrix heatmap
+  const labels5 = ['Brent','HH','TTF','JKM','Freight'];
+  const matData = [
+    [1.00, 0.15,              corr['brent-ttf'], corr['brent-jkm'], freightRho],
+    [0.15, 1.00,              corr['hh-ttf'],    corr['hh-jkm'],    freightRho*0.5],
+    [corr['brent-ttf'], corr['hh-ttf'],  1.00,  corr['ttf-jkm'],   freightRho],
+    [corr['brent-jkm'], corr['hh-jkm'], corr['ttf-jkm'], 1.00,    freightRho],
+    [freightRho, freightRho*0.5, freightRho, freightRho, 1.00]
+  ];
+
+  // flatten to scatter-style dataset
+  const heatDatasets = [];
+  const n = 5;
+  const cellColors = [];
+  const cellData = [];
+  const cellLabels = [];
+  for (let i=0;i<n;i++) for(let j=0;j<n;j++) {
+    const v = matData[i][j];
+    const alpha = Math.abs(v)*0.85+0.05;
+    const col = v >= 0 ? `rgba(56,189,248,${alpha})` : `rgba(248,113,113,${alpha})`;
+    cellData.push({ x:j, y:n-1-i, v, col });
+  }
+
+  if (corrMatrixChart) {
+    corrMatrixChart.data.datasets[0].data = cellData.map(d=>({x:d.x,y:d.y,v:d.v}));
+    corrMatrixChart.data.datasets[0].backgroundColor = cellData.map(d=>d.col);
+    corrMatrixChart.update();
+  } else {
+    corrMatrixChart = new Chart(document.getElementById('cCorrMatrix'), {
+      type: 'bubble',
+      data: {
+        datasets:[{
+          data: cellData.map(d=>({x:d.x, y:d.y, r:18, v:d.v})),
+          backgroundColor: cellData.map(d=>d.col),
+          borderColor: 'transparent',
+        }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            callbacks:{
+              label: ctx => {
+                const d = cellData[ctx.dataIndex];
+                const row = labels5[n-1-Math.round(ctx.parsed.y)];
+                const col = labels5[Math.round(ctx.parsed.x)];
+                return `${row} / ${col}: ${d.v.toFixed(2)}`;
+              }
+            }
+          }
+        },
+        scales:{
+          x:{ min:-0.5, max:4.5, ticks:{ callback:v=>labels5[Math.round(v)]||'', color:C.m, font:{family:'DM Mono',size:10} }, grid:{color:C.grid} },
+          y:{ min:-0.5, max:4.5, ticks:{ callback:v=>labels5[n-1-Math.round(v)]||'', color:C.m, font:{family:'DM Mono',size:10} }, grid:{color:C.grid} }
+        }
+      }
+    });
+  }
+}
+
 
 let done = false;
 function initCharts() {
